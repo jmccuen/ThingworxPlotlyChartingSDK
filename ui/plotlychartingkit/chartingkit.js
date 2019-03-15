@@ -4,6 +4,7 @@ function TWIDEChart(widget, maxSeries, hasMultipleData, hasX, hasY, hasZ, multip
     let layout = new Object();
     let chartId;
     let chartData = [];
+    let chart = this;
 
     this.getProperties = function() {
         let properties = new Object();
@@ -189,6 +190,59 @@ function TWIDEChart(widget, maxSeries, hasMultipleData, hasX, hasY, hasZ, multip
         Plotly.relayout(widget.jqElementId, update);
     }
 
+    widget.afterLoad = function() {
+        chart.setSeriesProperties(widget.getProperty('NumberOfSeries'));
+    }
+
+    widget.afterSetProperty = function (name, value) {
+        if (name === 'NumberOfSeries' || name === 'SingleDataSource') {
+            chart.setSeriesProperties(widget.getProperty('NumberOfSeries'));
+            widget.updatedProperties();
+            return true;
+        }
+    }
+
+    this.setSeriesProperties = function (value) {
+        let properties = widget.allWidgetProperties();
+        let seriesNumber;
+        let singleSource = true; 
+        if (hasMultipleData) { singleSource = widget.getProperty('SingleDataSource') };
+
+        for (seriesNumber = 1; seriesNumber <= value; seriesNumber++) {
+            if (hasX && hasMultipleData) { properties['properties']['XDataField' + seriesNumber]['isVisible'] = !singleSource };
+            if (hasY) { properties['properties']['YDataField' + seriesNumber]['isVisible'] = true };
+            if (hasMultipleData) { properties['properties']['DataSource' + seriesNumber]['isVisible'] = !singleSource };
+            properties['properties']['SeriesStyle' + seriesNumber]['isVisible'] = true;     
+        }
+
+        for (seriesNumber = value + 1; seriesNumber <= this.MAX_SERIES; seriesNumber++) {
+            if (hasX && hasMultipleData) { properties['properties']['XDataField' + seriesNumber]['isVisible'] = false };
+            if (hasY) { properties['properties']['YDataField' + seriesNumber]['isVisible'] = false};
+            if (hasMultipleData) { properties['properties']['DataSource' + seriesNumber]['isVisible'] = false };
+            properties['properties']['SeriesStyle' + seriesNumber]['isVisible'] = false;
+        }
+
+        if (hasMultipleData) {
+            
+            if (singleSource) {
+                for (seriesNumber = 1; seriesNumber <= this.MAX_SERIES; seriesNumber++) {
+                    if (hasX) { properties['properties']['XDataField' + seriesNumber]['sourcePropertyName'] = 'Data' };
+                    if (hasY) { properties['properties']['YDataField' + seriesNumber]['sourcePropertyName'] = 'Data' };
+                }
+                properties['properties']['Data']['isVisible'] = true;
+                properties['properties']['XAxisField']['isVisible'] = true;
+            } else
+            {
+                for (seriesNumber = 1; seriesNumber <= this.MAX_SERIES; seriesNumber++) {
+                    properties['properties']['XDataField' + seriesNumber]['sourcePropertyName'] = 'DataSource' + seriesNumber;
+                    properties['properties']['YDataField' + seriesNumber]['sourcePropertyName'] = 'DataSource' + seriesNumber;
+                }
+                properties['properties']['Data']['isVisible'] = false;
+                properties['properties']['XAxisField']['isVisible'] = false;
+            }
+        }
+    }
+
 
 }
 
@@ -196,13 +250,14 @@ function TWRuntimeChart(widget) {
     let properties = widget.properties;
     let jqElementId = widget.jqElementId;
     let chartId = jqElementId;
-    let layout;
-    let chartData = [];
+
+    this.layout = new Object;
+    this.chartData = [];
 
     this.render = function() {
 
         let numSeries = properties['NumberOfSeries'];
-        let chartData = [];
+        this.chartData = [];
 
 
         let titleStyle = TW.getStyleFromStyleDefinition(properties['ChartTitleStyle'],'DefaultChartTitleStyle');
@@ -214,7 +269,7 @@ function TWRuntimeChart(widget) {
         title.x = properties['ChartTitleX'];
         title.y = properties['ChartTitleY'];
 
-        layout = {
+        this.layout = {
 			showlegend: properties['ShowLegend'],
 			legend: {'orientation': 'h'},
 			font: {
@@ -225,7 +280,7 @@ function TWRuntimeChart(widget) {
             title: title
         };
         
-        Plotly.newPlot(chartId, chartData, layout, {displayModeBar: false});
+        Plotly.newPlot(chartId, this.chartData, this.layout, {displayModeBar: false});
 
     }
 
@@ -241,17 +296,17 @@ function TWRuntimeChart(widget) {
                 trace.line = line;
             }
             
-            if ( chartData[trace.index] !== void 0 ) {
-                chartData[trace.index] = trace;
+            if ( this.chartData[trace.index] !== void 0 ) {
+                this.chartData[trace.index] = trace;
             } else
             { 
-                chartData.push(trace)
+                this.chartData.push(trace)
             }
         }
 
         
 
-        Plotly.react(chartId,chartData,layout,{displayModeBar: false});
+        Plotly.react(chartId,this.chartData,this.layout,{displayModeBar: false});
     }
 
     widget.resize = function(width,height) {
