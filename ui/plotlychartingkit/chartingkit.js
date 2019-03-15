@@ -285,23 +285,28 @@ function TWRuntimeChart(widget) {
     }
 
     this.draw = function(data) {
-
-        for (i=1;i<=data.length;i++) {
+        console.log("entering draw");
+        for (let i=1;i<=data.length;i++) {
             trace = data[i-1];
-            let series = trace.index+1;
+            let series = trace.series;
             if (trace.type == "scatter") {
                 let style = TW.getStyleFromStyleDefinition(properties['SeriesStyle' + series],'DefaultChartStyle' + series);
                 let line = new Object();
                 line.color = style.lineColor;
                 trace.line = line;
             }
-            
-            if ( this.chartData[trace.index] !== void 0 ) {
-                this.chartData[trace.index] = trace;
-            } else
-            { 
-                this.chartData.push(trace)
+
+            let exists = false;
+            for (let i = 0; i<this.chartData.length;i++) {
+                if (trace.series === this.chartData[i].series) {
+                    this.chartData[i] = trace;
+                    exists = true;
+                }
             }
+            if (!exists) {
+                this.chartData.push(trace);
+            }
+            
         }
 
         
@@ -322,8 +327,5 @@ function TWRuntimeChart(widget) {
     function getFontSize(text) {
     	return TW.getTextSize(text).split(": ")[1].replace("px;","");
     }
-
-
-
 
 }
