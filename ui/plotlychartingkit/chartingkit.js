@@ -1,29 +1,31 @@
-function TWIDEChart(widget, maxSeries, hasMultipleData, hasX, hasY, hasZ, multipleX) {
+function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
 
     this.MAX_SERIES = maxSeries;
+    this.MAX_AXES = maxAxes;
     let layout = new Object();
     let chartId;
-    let chartData = [];
     let chart = this;
 
     this.getProperties = function() {
         let properties = new Object();
 
-        properties.NumberOfSeries = {
-            'description': 'Number of series in the chart',
-            'defaultValue': 1,
-            'baseType': 'NUMBER',
-            'isVisible': true
+        if (type !== 'pie') {
+            properties.NumberOfSeries = {
+                'description': 'Number of series in the chart',
+                'defaultValue': 1,
+                'baseType': 'NUMBER',
+                'isVisible': true
+            };
         };
 
-        if (hasMultipleData) { 
+        if (multipleData) { 
             properties.SingleDataSource = {
                 'description': TW.IDE.I18NController.translate('tw.labelchart-ide.properties.single-data-source.description'),
                 'defaultValue': true,
                 'baseType': 'BOOLEAN',
                 'isVisible': true
             };
-        }
+        };
 
         properties.Data = {
             'description': TW.IDE.I18NController.translate('tw.labelchart-ide.properties.data.description'),
@@ -83,9 +85,18 @@ function TWIDEChart(widget, maxSeries, hasMultipleData, hasX, hasY, hasZ, multip
             'isVisible': true,
             'defaultValue': 30,
             'isBindingTarget': false
-        }
+        };
 
-        if (hasX) {
+        if (type != 'pie') {
+            
+            properties.NumberOfAxes =  {
+                'description': 'Number of Axes',
+                'baseType': 'NUMBER',
+                'isVisible': true,
+                'defaultValue': 1,
+                'isBindingTarget': false
+            };
+
             properties.XAxisField = {
                 'description': TW.IDE.I18NController.translate('tw.xychart-ide.properties.x-axis-field.description'),
                 'baseType': 'FIELDNAME',
@@ -94,26 +105,55 @@ function TWIDEChart(widget, maxSeries, hasMultipleData, hasX, hasY, hasZ, multip
                 'isVisible': true
             };
 
-            properties.XAxisTickMode = {
-                'description': '',
-                'baseType': 'STRING',
-                'defaultValue': 'auto',
-                'isVisible' : true,
-                'selectOptions': [
-                    { value: 'auto', text: 'Auto' },
-                    { value: 'linear', text: 'Linear' },
-                    { value: 'array', text: 'InfoTable' }
-                ]
-            };
+            for (let axis = 1; axis <= this.MAX_AXES; axis++) {
+            
+                let xTickMode = {
+                    'description': '',
+                    'baseType': 'STRING',
+                    'defaultValue': 'auto',
+                    'isVisible' : true,
+                    'selectOptions': [
+                        { value: 'auto', text: 'Auto' },
+                        { value: 'linear', text: 'Linear' },
+                        { value: 'array', text: 'InfoTable' }
+                    ]
+                };
 
-            properties.XAxisTickMax =  {
-                'description': 'Max number of X Axis Ticks, if tick mode is auto',
-                'baseType': 'NUMBER',
-                'isVisible': true,
-                'defaultValue': 0,
-                'isBindingTarget': false
-            };
+                let xTickMax =  {
+                    'description': 'Max number of X Axis Ticks, if tick mode is auto',
+                    'baseType': 'NUMBER',
+                    'isVisible': true,
+                    'defaultValue': 0,
+                    'isBindingTarget': false
+                };
 
+                let yTickMode = {
+                    'description': '',
+                    'baseType': 'STRING',
+                    'defaultValue': 'auto',
+                    'isVisible' : true,
+                    'selectOptions': [
+                        { value: 'auto', text: 'Auto' },
+                        { value: 'linear', text: 'Linear' },
+                        { value: 'array', text: 'InfoTable' }
+                    ]
+                };
+
+                let yTickMax =  {
+                    'description': 'Max number of X Axis Ticks, if tick mode is auto',
+                    'baseType': 'NUMBER',
+                    'isVisible': true,
+                    'defaultValue': 0,
+                    'isBindingTarget': false
+                };
+
+                properties['XAxisTickMode' + axis] = xTickMode;
+                properties['XAxisTickMax' + axis] = xTickMax;
+
+                properties['YAxisTickMode' + axis] = yTickMode;
+                properties['YAxisTickMax' + axis] = yTickMax;
+
+            }
 
         }
 
@@ -135,6 +175,16 @@ function TWIDEChart(widget, maxSeries, hasMultipleData, hasX, hasY, hasZ, multip
                 'isVisible': true
             };
 
+            let axisXProperty = {
+                'description': '',
+                'baseType': 'STRING',
+                'defaultValue': 'x1',
+                'isVisible' : true,
+                'selectOptions': [
+                    { value: 'x1', text: 'x1' }
+                ]
+            };
+
             let dataYProperty = {
                 'description': TW.IDE.I18NController.translate('tw.labelchart-ide.data-field-property.description') + seriesNumber,
                 'baseType': 'FIELDNAME',
@@ -142,6 +192,15 @@ function TWIDEChart(widget, maxSeries, hasMultipleData, hasX, hasY, hasZ, multip
                 'isBindingTarget': false,
                 'isVisible': true
             };  
+            let axisYProperty = {
+                'description': '',
+                'baseType': 'STRING',
+                'defaultValue': 'x1',
+                'isVisible' : true,
+                'selectOptions': [
+                    { value: 'y1', text: 'y1' }
+                ]
+            };
             
             let dataZProperty = {
                 'description': 'Z Axis ' + seriesNumber,
@@ -165,14 +224,19 @@ function TWIDEChart(widget, maxSeries, hasMultipleData, hasX, hasY, hasZ, multip
                 'isVisible': true
             };
 
-            if(hasMultipleData) { properties['DataSource' + seriesNumber] = dataSourceProperty };
-            if (hasX && multipleX) { properties['XDataField' + seriesNumber] = dataXProperty };
-            if (hasY) { properties['YDataField' + seriesNumber] = dataYProperty };
-            if (hasZ) { properties['ZDataField' + seriesNumber] = dataZProperty };
-            properties['SeriesLabel' + seriesNumber] = dataLabelProperty;
-            properties['SeriesStyle' + seriesNumber] = seriesStyleProperty;
-            properties['SeriesStyle' + seriesNumber]['defaultValue'] = 'DefaultChartStyle' + seriesNumber;
-
+            
+            if(multipleData) { properties['DataSource' + seriesNumber] = dataSourceProperty };
+            if (type !== 'pie') { 
+                properties['XDataField' + seriesNumber] = dataXProperty;
+                properties['XAxis' + seriesNumber] = axisXProperty;
+                properties['YDataField' + seriesNumber] = dataYProperty;
+                properties['YAxis' + seriesNumber] = axisYProperty;
+                properties['SeriesLabel' + seriesNumber] = dataLabelProperty;
+                properties['SeriesStyle' + seriesNumber] = seriesStyleProperty;
+                properties['SeriesStyle' + seriesNumber]['defaultValue'] = 'DefaultChartStyle' + seriesNumber;
+                
+            };
+            if (type === '3d') { properties['ZDataField' + seriesNumber] = dataZProperty };
         }
 
         
@@ -223,24 +287,64 @@ function TWIDEChart(widget, maxSeries, hasMultipleData, hasX, hasY, hasZ, multip
 
     widget.afterLoad = function() {
         chart.setSeriesProperties(widget.getProperty('NumberOfSeries'));
-    }
+        chart.setAxesProperties(widget.getProperty('NumberOfAxes'))
+    };
 
     widget.afterSetProperty = function (name, value) {
+        let properties = widget.allWidgetProperties();
+
         if (name === 'NumberOfSeries' || name === 'SingleDataSource') {
             chart.setSeriesProperties(widget.getProperty('NumberOfSeries'));
             widget.updatedProperties();
             return true;
         };
 
-        if (name === 'XAxisTickMode') {
-            if (value === 'auto') {
-                let properties = widget.allWidgetProperties();
-                properties['properties']['XAxisTicMax']['isVisible'] = true
-            } else {
-                properties['properties']['XAxisTicMax']['isVisible'] = false
-            }
+        if (name === 'NumberOfAxes') {
+            chart.setAxesProperties(value);
             widget.updatedProperties();
             return true;
+        };
+    };
+
+    widget.beforeSetProperty = function (name, value) {
+        if (name === 'NumberOfSeries') {
+            value = parseInt(value, 10);
+            if (value <= 0 || value > chart.MAX_SERIES)
+                return TW.IDE.I18NController.translate('tw.labelchart-ide.number-series-warning');
+        }
+        if (name === 'NumberOfAxes') {
+            value = parseInt(value, 10);
+            if (value <= 0 || value > chart.MAX_AXES)
+                return 'Error - Max axes is ' + chart.MAX_AXES
+        }
+    };
+
+    this.setAxesProperties = function (value) {
+        let properties = widget.allWidgetProperties();
+
+        let xValues = [];
+        let yValues = [];
+        for (let axis = 1; axis <= value; axis++) {
+            properties['properties']['XAxisTickMode' + axis]['isVisible'] = true
+            properties['properties']['XAxisTickMax' + axis]['isVisible'] = true;
+
+            properties['properties']['YAxisTickMode' + axis]['isVisible'] = true;
+            properties['properties']['YAxisTickMax' + axis]['isVisible'] = true;
+            xValues.push({ value: 'x' + axis, text: 'x' + axis });
+            yValues.push({ value: 'y' + axis, text: 'y' + axis });
+        }
+
+        for (axis = value + 1; axis <= this.MAX_AXES; axis++) {
+            properties['properties']['XAxisTickMode' + axis]['isVisible'] = false;
+            properties['properties']['XAxisTickMax' + axis]['isVisible'] = false;
+
+            properties['properties']['YAxisTickMode' + axis]['isVisible'] = false
+            properties['properties']['YAxisTickMax' + axis]['isVisible'] = false;
+        }
+
+        for (let seriesNumber = 1; seriesNumber <= this.MAX_SERIES;seriesNumber++) {
+            properties['properties']['XAxis' + seriesNumber]['selectOptions'] = xValues;
+            properties['properties']['YAxis' + seriesNumber]['selectOptions'] = yValues;
         }
     }
 
@@ -248,35 +352,34 @@ function TWIDEChart(widget, maxSeries, hasMultipleData, hasX, hasY, hasZ, multip
         let properties = widget.allWidgetProperties();
         let seriesNumber;
         let singleSource = true; 
-        if (hasMultipleData) { singleSource = widget.getProperty('SingleDataSource') };
+        if (multipleData) { singleSource = widget.getProperty('SingleDataSource') };
+        if (type !== 'pie') {
+            for (seriesNumber = 1; seriesNumber <= value; seriesNumber++) {
+                properties['properties']['XDataField' + seriesNumber]['isVisible'] = !singleSource
+                properties['properties']['YDataField' + seriesNumber]['isVisible'] = true;
+                properties['properties']['DataSource' + seriesNumber]['isVisible'] = !singleSource
+                properties['properties']['SeriesLabel' + seriesNumber]['isVisible'] = true;
+                properties['properties']['SeriesStyle' + seriesNumber]['isVisible'] = true;  
+            }
 
-        for (seriesNumber = 1; seriesNumber <= value; seriesNumber++) {
-            if (hasX && hasMultipleData) { properties['properties']['XDataField' + seriesNumber]['isVisible'] = !singleSource };
-            if (hasY) { properties['properties']['YDataField' + seriesNumber]['isVisible'] = true };
-            if (hasMultipleData) { properties['properties']['DataSource' + seriesNumber]['isVisible'] = !singleSource };
-            properties['properties']['SeriesLabel' + seriesNumber]['isVisible'] = true;
-            properties['properties']['SeriesStyle' + seriesNumber]['isVisible'] = true;     
+            for (seriesNumber = value + 1; seriesNumber <= this.MAX_SERIES; seriesNumber++) {
+                properties['properties']['XDataField' + seriesNumber]['isVisible'] = false;
+                properties['properties']['YDataField' + seriesNumber]['isVisible'] = false;
+                properties['properties']['DataSource' + seriesNumber]['isVisible'] = false;
+                properties['properties']['SeriesLabel' + seriesNumber]['isVisible'] = false;
+                properties['properties']['SeriesStyle' + seriesNumber]['isVisible'] = false;
+            }
         }
 
-        for (seriesNumber = value + 1; seriesNumber <= this.MAX_SERIES; seriesNumber++) {
-            if (hasX && hasMultipleData) { properties['properties']['XDataField' + seriesNumber]['isVisible'] = false };
-            if (hasY) { properties['properties']['YDataField' + seriesNumber]['isVisible'] = false};
-            if (hasMultipleData) { properties['properties']['DataSource' + seriesNumber]['isVisible'] = false };
-            properties['properties']['SeriesLabel' + seriesNumber]['isVisible'] = false;
-            properties['properties']['SeriesStyle' + seriesNumber]['isVisible'] = false;
-        }
-
-        if (hasMultipleData) {
-            
+        if (multipleData) {
             if (singleSource) {
                 for (seriesNumber = 1; seriesNumber <= this.MAX_SERIES; seriesNumber++) {
-                    if (hasX) { properties['properties']['XDataField' + seriesNumber]['sourcePropertyName'] = 'Data' };
-                    if (hasY) { properties['properties']['YDataField' + seriesNumber]['sourcePropertyName'] = 'Data' };
+                    properties['properties']['XDataField' + seriesNumber]['sourcePropertyName'] = 'Data';
+                    properties['properties']['YDataField' + seriesNumber]['sourcePropertyName'] = 'Data';
                 }
                 properties['properties']['Data']['isVisible'] = true;
                 properties['properties']['XAxisField']['isVisible'] = true;
-            } else
-            {
+            } else {
                 for (seriesNumber = 1; seriesNumber <= this.MAX_SERIES; seriesNumber++) {
                     properties['properties']['XDataField' + seriesNumber]['sourcePropertyName'] = 'DataSource' + seriesNumber;
                     properties['properties']['YDataField' + seriesNumber]['sourcePropertyName'] = 'DataSource' + seriesNumber;
@@ -286,19 +389,19 @@ function TWIDEChart(widget, maxSeries, hasMultipleData, hasX, hasY, hasZ, multip
             }
         }
     }
-
-
 }
 
 function TWRuntimeChart(widget) {
     let properties = widget.properties;
     let chartId = widget.jqElementId;
     let chart = this;
+    
 
     this.layout = new Object;
     this.chartData = [];
     this.chartInfo = {};
     this.chartDiv;
+    this.plotted = false;
 
     this.render = function() {
 
@@ -328,14 +431,6 @@ function TWRuntimeChart(widget) {
             plot_bgcolor: '#fff',
             title: title
         };
-
-        if (properties['XAxisField']) {
-            let xaxis = new Object();
-            xaxis.tickmode = properties['XAxisTickMode'];
-            xaxis.nticks = properties['XAxisTickMax'];
-
-            this.layout.xaxis = xaxis;
-        }
         
         Plotly.newPlot(chartDiv, this.chartData, this.layout, {displayModeBar: false});
 
@@ -343,7 +438,14 @@ function TWRuntimeChart(widget) {
 
     }
 
+    this.extend = function(data) {
+        Plotly.extendTraces(chartId,data, [0]);
+
+    }
+
+
     this.draw = function(data) {
+        chart.plotted = true;
         for (let i=1;i<=data.length;i++) {
             trace = data[i-1];
             let series = trace.series;
@@ -352,7 +454,9 @@ function TWRuntimeChart(widget) {
                 let line = new Object();
                 line.color = style.lineColor;
                 trace.line = line;
-                trace.name = properties['SeriesLabel' + series]
+                trace.name = properties['SeriesLabel' + series];
+                //trace.xaxis = properties['XAxis' + series];
+                //trace.yaxis = properties['YAxis' + series];
             }
 
             let exists = false;
@@ -371,16 +475,6 @@ function TWRuntimeChart(widget) {
         
 
         Plotly.react(chartId,this.chartData,this.layout,{displayModeBar: false});
-    }
-
-    widget.resize = function(width,height) {
-        let update = {
-            width: width,
-            height: height
-        }
-
-        Plotly.relayout(chartId, update);
-
     }
 
     this.handleClick = function(data)
@@ -418,5 +512,21 @@ function TWRuntimeChart(widget) {
     function getFontSize(text) {
     	return TW.getTextSize(text).split(": ")[1].replace("px;","");
     }
+
+    widget.resize = function(width,height) {
+        let update = {
+            width: width,
+            height: height
+        }
+
+        Plotly.relayout(chartId, update);
+
+    }
+
+    widget.runtimeProperties = function () {
+        return {
+            'needsDataLoadingAndError': true,
+        };
+    };
 
 }
