@@ -75,7 +75,7 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
             'description': 'Total width of the widget',
             'baseType': 'NUMBER',
             'isVisible': true,
-            'defaultValue': 90,
+            'defaultValue': 400,
             'isBindingTarget': false
         };
 
@@ -83,7 +83,7 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
             'description': 'Total height of the widget',
             'baseType': 'NUMBER',
             'isVisible': true,
-            'defaultValue': 30,
+            'defaultValue': 400,
             'isBindingTarget': false
         };
 
@@ -309,13 +309,13 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
     widget.beforeSetProperty = function (name, value) {
         if (name === 'NumberOfSeries') {
             value = parseInt(value, 10);
-            if (value <= 0 || value > chart.MAX_SERIES)
-                return TW.IDE.I18NController.translate('tw.labelchart-ide.number-series-warning');
+            if (value < 0 || value > chart.MAX_SERIES)
+                return 'Error - Max number of series is ' + chart.MAX_SERIES;
         }
         if (name === 'NumberOfAxes') {
             value = parseInt(value, 10);
-            if (value <= 0 || value > chart.MAX_AXES)
-                return 'Error - Max axes is ' + chart.MAX_AXES
+            if (value < 0 || value > chart.MAX_AXES)
+                return 'Error - Max number of axes is ' + chart.MAX_AXES
         }
     };
 
@@ -356,7 +356,9 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
         if (type !== 'pie') {
             for (seriesNumber = 1; seriesNumber <= value; seriesNumber++) {
                 properties['properties']['XDataField' + seriesNumber]['isVisible'] = !singleSource
+                properties['properties']['XAxis' + seriesNumber]['isVisible'] = true;
                 properties['properties']['YDataField' + seriesNumber]['isVisible'] = true;
+                properties['properties']['YAxis' + seriesNumber]['isVisible'] = true;
                 properties['properties']['DataSource' + seriesNumber]['isVisible'] = !singleSource
                 properties['properties']['SeriesLabel' + seriesNumber]['isVisible'] = true;
                 properties['properties']['SeriesStyle' + seriesNumber]['isVisible'] = true;  
@@ -364,7 +366,9 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
 
             for (seriesNumber = value + 1; seriesNumber <= this.MAX_SERIES; seriesNumber++) {
                 properties['properties']['XDataField' + seriesNumber]['isVisible'] = false;
+                properties['properties']['XAxis' + seriesNumber]['isVisible'] = false;
                 properties['properties']['YDataField' + seriesNumber]['isVisible'] = false;
+                properties['properties']['YAxis' + seriesNumber]['isVisible']= false;
                 properties['properties']['DataSource' + seriesNumber]['isVisible'] = false;
                 properties['properties']['SeriesLabel' + seriesNumber]['isVisible'] = false;
                 properties['properties']['SeriesStyle' + seriesNumber]['isVisible'] = false;
@@ -432,9 +436,8 @@ function TWRuntimeChart(widget) {
             title: title
         };
         
-        Plotly.newPlot(chartDiv, this.chartData, this.layout, {displayModeBar: false});
-
-        chartDiv.on('plotly_click', this.handleClick);
+       Plotly.newPlot(chartDiv, this.chartData, this.layout, {displayModeBar: false});
+       chartDiv.on('plotly_click', this.handleClick);
 
     }
 
@@ -503,15 +506,15 @@ function TWRuntimeChart(widget) {
 
         var update = {'marker':{color: colors}};
         Plotly.restyle(chartId, update, [tn]);
-    }
+    };
 
     this.handleSelectionUpdate = function (propertyName, selectedRows, selectedRowIndices) {
     
-    }
+    };
 
     function getFontSize(text) {
     	return TW.getTextSize(text).split(": ")[1].replace("px;","");
-    }
+    };
 
     widget.resize = function(width,height) {
         let update = {
@@ -521,12 +524,6 @@ function TWRuntimeChart(widget) {
 
         Plotly.relayout(chartId, update);
 
-    }
-
-    widget.runtimeProperties = function () {
-        return {
-            'needsDataLoadingAndError': true,
-        };
     };
 
 }
