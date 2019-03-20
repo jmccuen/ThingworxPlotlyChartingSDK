@@ -35,6 +35,44 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
             'warnIfNotBoundAsTarget': true
         };
 
+        properties.MarginTop = {
+            'description': 'Top Margin',
+            'baseType': 'NUMBER',
+            'isVisible': true,
+            'defaultValue': 100,
+            'isBindingTarget': false
+        };
+
+        properties.MarginBottom = {
+            'description': 'Bottom Margin',
+            'baseType': 'NUMBER',
+            'isVisible': true,
+            'defaultValue': 80,
+            'isBindingTarget': false
+        };
+
+        properties.MarginLeft = {
+            'description': 'Left Margin',
+            'baseType': 'NUMBER',
+            'isVisible': true,
+            'defaultValue': 80,
+            'isBindingTarget': false
+        };
+
+        properties.MarginRight = {
+            'description': 'Right Margin',
+            'baseType': 'NUMBER',
+            'isVisible': true,
+            'defaultValue': 80,
+            'isBindingTarget': false
+        };
+
+        properties.ShowTitle =  {
+            'description': 'Show title',
+            'baseType': 'BOOLEAN',
+            'defaultValue': true
+        };
+
         properties.ChartTitle = {
             'description': TW.IDE.I18NController.translate('tw.labelchart-ide.properties.chart-title.description'),
             'baseType': 'STRING',
@@ -69,6 +107,12 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
             'description': TW.IDE.I18NController.translate('tw.labelchart-ide.properties.show-legend.description'),
             'baseType': 'BOOLEAN',
             'defaultValue': true
+        };
+
+        properties.AllowSelection =  {
+            'description': 'Allow Selection',
+            'baseType': 'BOOLEAN',
+            'defaultValue': false
         };
 
         properties.Width = {
@@ -270,6 +314,9 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
         
         Plotly.newPlot(chartId, chartData, layout, {displayModeBar: false});
 
+        chart.setSeriesProperties(widget.getProperty('NumberOfSeries'));
+        chart.setAxesProperties(widget.getProperty('NumberOfAxes'))
+
     }
 
     this.draw = function(data) {
@@ -359,9 +406,11 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
                 properties['properties']['XAxis' + seriesNumber]['isVisible'] = true;
                 properties['properties']['YDataField' + seriesNumber]['isVisible'] = true;
                 properties['properties']['YAxis' + seriesNumber]['isVisible'] = true;
-                properties['properties']['DataSource' + seriesNumber]['isVisible'] = !singleSource
                 properties['properties']['SeriesLabel' + seriesNumber]['isVisible'] = true;
                 properties['properties']['SeriesStyle' + seriesNumber]['isVisible'] = true;  
+                if (multipleData) {
+                    properties['properties']['DataSource' + seriesNumber]['isVisible'] = !singleSource
+                }
             }
 
             for (seriesNumber = value + 1; seriesNumber <= this.MAX_SERIES; seriesNumber++) {
@@ -369,35 +418,35 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
                 properties['properties']['XAxis' + seriesNumber]['isVisible'] = false;
                 properties['properties']['YDataField' + seriesNumber]['isVisible'] = false;
                 properties['properties']['YAxis' + seriesNumber]['isVisible']= false;
-                properties['properties']['DataSource' + seriesNumber]['isVisible'] = false;
                 properties['properties']['SeriesLabel' + seriesNumber]['isVisible'] = false;
                 properties['properties']['SeriesStyle' + seriesNumber]['isVisible'] = false;
+                if (multipleData) {
+                    properties['properties']['DataSource' + seriesNumber]['isVisible'] = false;
+                }
             }
         }
 
-        if (multipleData) {
-            if (singleSource) {
-                for (seriesNumber = 1; seriesNumber <= this.MAX_SERIES; seriesNumber++) {
-                    properties['properties']['XDataField' + seriesNumber]['sourcePropertyName'] = 'Data';
-                    properties['properties']['YDataField' + seriesNumber]['sourcePropertyName'] = 'Data';
-                }
-                properties['properties']['Data']['isVisible'] = true;
-                properties['properties']['XAxisField']['isVisible'] = true;
-            } else {
-                for (seriesNumber = 1; seriesNumber <= this.MAX_SERIES; seriesNumber++) {
-                    properties['properties']['XDataField' + seriesNumber]['sourcePropertyName'] = 'DataSource' + seriesNumber;
-                    properties['properties']['YDataField' + seriesNumber]['sourcePropertyName'] = 'DataSource' + seriesNumber;
-                }
-                properties['properties']['Data']['isVisible'] = false;
-                properties['properties']['XAxisField']['isVisible'] = false;
+        if (singleSource) {
+            for (seriesNumber = 1; seriesNumber <= this.MAX_SERIES; seriesNumber++) {
+                properties['properties']['XDataField' + seriesNumber]['sourcePropertyName'] = 'Data';
+                properties['properties']['YDataField' + seriesNumber]['sourcePropertyName'] = 'Data';
             }
+            properties['properties']['Data']['isVisible'] = true;
+            properties['properties']['XAxisField']['isVisible'] = true;
+        } else {
+            for (seriesNumber = 1; seriesNumber <= this.MAX_SERIES; seriesNumber++) {
+                properties['properties']['XDataField' + seriesNumber]['sourcePropertyName'] = 'DataSource' + seriesNumber;
+                properties['properties']['YDataField' + seriesNumber]['sourcePropertyName'] = 'DataSource' + seriesNumber;
+            }
+            properties['properties']['Data']['isVisible'] = false;
+            properties['properties']['XAxisField']['isVisible'] = false;
         }
     }
 }
 
 function TWRuntimeChart(widget) {
     let properties = widget.properties;
-    let chartId = widget.jqElementId;
+    let chartId;
     let chart = this;
     
 
@@ -408,36 +457,45 @@ function TWRuntimeChart(widget) {
     this.plotted = false;
 
     this.render = function() {
+        chartId = widget.jqElementId;
 
-        let numSeries = properties['NumberOfSeries'];
-
-        this.chartData = [];
+        chart.chartData = [];
         let chartDiv = document.getElementById(widget.jqElementId);
 
-
-        let titleStyle = TW.getStyleFromStyleDefinition(properties['ChartTitleStyle'],'DefaultChartTitleStyle');
-        let title = new Object();
-        title.text = properties['ChartTitle'];
-        title.font = new Object();
-        title.font.size = Number(getFontSize(titleStyle.textSize));
-        title.font.color = titleStyle.foregroundColor;
-        title.x = properties['ChartTitleX'];
-        title.y = properties['ChartTitleY'];
-
-
-        this.layout = {
+        chart.layout = {
 			showlegend: properties['ShowLegend'],
 			legend: {'orientation': 'h'},
 			font: {
 				color: 'black',
 				size: 11
             },
-            plot_bgcolor: '#fff',
-            title: title
+            plot_bgcolor: '#fff'
         };
+
+        if (properties['ShowTitle']) {
+            let titleStyle = TW.getStyleFromStyleDefinition(properties['ChartTitleStyle'],'DefaultChartTitleStyle');
+            let title = new Object();
+            title.text = properties['ChartTitle'];
+            title.font = new Object();
+            title.font.size = Number(getFontSize(titleStyle.textSize));
+            title.font.color = titleStyle.foregroundColor;
+            title.x = properties['ChartTitleX'];
+            title.y = properties['ChartTitleY'];
+            chart.layout.title = title;
+        }
+
+        let margin = new Object();
+        margin.t = properties['MarginTop'];
+        margin.b = properties['MarginBottom'];
+        margin.l = properties['MarginLeft'];
+        margin.r = properties['MarginRight'];
+
+        chart.layout.margin = margin;
         
-       Plotly.newPlot(chartDiv, this.chartData, this.layout, {displayModeBar: false});
-       chartDiv.on('plotly_click', this.handleClick);
+        Plotly.newPlot(chartDiv, chart.chartData, chart.layout, {displayModeBar: false});
+        if (properties['AllowSelection']) {
+            chartDiv.on('plotly_click', chart.handleClick);
+        }
 
     }
 
@@ -463,21 +521,21 @@ function TWRuntimeChart(widget) {
             }
 
             let exists = false;
-            for (let i = 0; i<this.chartData.length;i++) {
-                if (trace.series === this.chartData[i].series) {
-                    this.chartData[i] = trace;
-                    exists = true;
+            for (let i = 0; i<chart.chartData.length;i++) {
+                if (trace.series === chart.chartData[i].series) {
+                    chart.chartData[i] = trace;
+                    exists = chart;
                 }
             }
             if (!exists) {
-                this.chartData.push(trace);
+                chart.chartData.push(trace);
             }
             
         }
 
         
 
-        Plotly.react(chartId,this.chartData,this.layout,{displayModeBar: false});
+        Plotly.react(chartId,chart.chartData,chart.layout,{displayModeBar: false});
     }
 
     this.handleClick = function(data)
@@ -516,6 +574,57 @@ function TWRuntimeChart(widget) {
     	return TW.getTextSize(text).split(": ")[1].replace("px;","");
     };
 
+    this.getXY = function(it) {
+		const rows = it.ActualDataRows;
+		let values = new Object();
+        let x = [];       
+        let y = new Object();
+        
+        for (let i=0;i<rows.length;i++) {
+        	x.push(rows[i][properties['XAxisField']]);
+       	for (let j=1;j<=properties['NumberOfSeries'];j++) {
+       		if (properties['YDataField' + j]) {
+					if (!y[j]) {	
+						y[j] = new Object();
+						y[j].values = [];
+					};
+		    		y[j].values.push(rows[i][properties['YDataField' + j]]);
+       		};
+       	};
+        };
+        
+        values.x = x;
+        values.y = y;
+        
+        return values;
+	}
+	this.getDynamicXY = function(it) {
+		const rows = it.ActualDataRows;
+		let values = new Object();
+        let x = [];
+        let y = {};
+		let shape = it.DataShape;
+		
+		for (let i=0;i<rows.length;i++) {
+			let count = 1;
+			x.push(rows[i][properties['XAxisField']]);
+			for (let key in shape) {
+				if (shape[key].baseType === 'NUMBER' || shape[key].baseType === 'INTEGER') {
+					if (!y[count]) {	
+						y[count] = new Object();
+						y[count].values = [];
+					};
+					y[count].values.push(rows[i][key]);
+					count++;
+				};
+			};
+		};
+		values.x = x;
+		values.y = y;
+		
+        return values
+	};
+
     widget.resize = function(width,height) {
         let update = {
             width: width,
@@ -523,7 +632,14 @@ function TWRuntimeChart(widget) {
         }
 
         Plotly.relayout(chartId, update);
-
     };
+
+    widget.runtimeProperties = function () {
+        return {
+            'needsDataLoadingAndError': true,
+	        'supportsAutoResize': true
+        };
+    };
+
 
 }
