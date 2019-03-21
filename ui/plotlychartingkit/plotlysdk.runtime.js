@@ -17,6 +17,7 @@ function TWRuntimeChart(widget) {
     this.chartData = [];
     this.chartInfo = {};
     this.chartDiv;
+    this.plot;
 
     //this just lets the chart widget know if its already drawn the chart at least once
     //this is useful for streaming charts that might want to draw once and then extend after the first draw
@@ -71,9 +72,13 @@ function TWRuntimeChart(widget) {
         for (let i = 2; i <= properties['NumberOfYAxes'];i++) {
             chart.layout['yaxis' + i] = getAxisObject('Y',i);
         }
+
+        if (properties['AllowSelection']) {
+            chart.layout.clickmode = 'event+select';
+        };
         
         //draw the chart
-        Plotly.newPlot(chartDiv, chart.chartData, chart.layout, {displayModeBar: false});
+        chart.plot = Plotly.newPlot(chartDiv, chart.chartData, chart.layout, {displayModeBar: false});
 
         //Add our click event
         if (properties['AllowSelection']) {
@@ -84,7 +89,7 @@ function TWRuntimeChart(widget) {
 
     //extend takes in just new data and adds it to the trace. Need to pass in trace number here, right now this only works for index 0.
     this.extend = function(data) {
-        Plotly.extendTraces(chartId,data, [0]);
+        chart.plot = Plotly.extendTraces(chartId,data, [0]);
 
     }
 
@@ -93,7 +98,7 @@ function TWRuntimeChart(widget) {
             let update = {
                 title: info.SinglePropertyValue
             };
-            Plotly.relayout(chartId, update);
+            chart.plot = Plotly.relayout(chartId, update);
         };
 
         for (let i=1;i<=properties['NumberOfXAxes'];i++) {
@@ -104,7 +109,7 @@ function TWRuntimeChart(widget) {
                 } else {
                     update['xaxis' + i] = { title: info.SinglePropertyValue };
                 }
-                Plotly.relayout(chartId, update);
+                chart.plot = Plotly.relayout(chartId, update);
             };
         };
 
@@ -116,7 +121,7 @@ function TWRuntimeChart(widget) {
                 } else {
                     update['yaxis' + i] = { title: info.SinglePropertyValue };
                 }
-                Plotly.relayout(chartId, update);
+                chart.plot = Plotly.relayout(chartId, update);
             };
         }
     };
@@ -157,6 +162,13 @@ function TWRuntimeChart(widget) {
             };
             //}
 
+            if (properties['AllowSelection']) {
+                let selectedStyle = TW.getStyleFromStyleDefinition(properties['SelectedItemStyle'],'DefaultChartSelectionStyle');
+                trace.selected = new Object();
+                trace.selected.marker = new Object();
+                trace.selected.marker.color = selectedStyle.backgroundColor;
+            };
+
             let exists = false;
             for (let i = 0; i<chart.chartData.length;i++) {
                 if (trace.series === chart.chartData[i].series) {
@@ -170,46 +182,38 @@ function TWRuntimeChart(widget) {
             
         }
 
-        Plotly.react(chartId,chart.chartData,chart.layout,{displayModeBar: false});
+        chart.plot = Plotly.react(chartId,chart.chartData,chart.layout,{displayModeBar: false});
     }
 
-    //This will highlight a bar or marker and make sure that the others go back to their original color. 
-    //Somewhat annoying that you need the whole color array for each point to do this
-    //We just get the length of the series from chart info (this has to be set by the chart widget) and grab the series style for our array
-    //and then we can store it in our chart info for later use. Then we update the selected marker.
-    //We need to add in tracking for what index this point is on the infotable so we can update thingworx about the selection
+    
     this.handleClick = function(data)
-    {
-        let pn='',
-        tn='',
-        series = '',
-        source = '';
-        for(let i=0; i < data.points.length; i++){
-            pn = data.points[i].pointNumber;
-            tn = data.points[i].curveNumber;
-            series = data.points[i].data.series;
-            source = data.points[i].data.dataSource;
-        };
-        let colors = [];
-        if (!chart.chartInfo[source]['SeriesStyle' + series]) {
-            colors = Array(chart.chartInfo[source].length);
-            let style = TW.getStyleFromStyleDefinition(properties['SeriesStyle' + series],'DefaultChartStyle' + series);
-            for (let i = 0; i<chart.chartInfo[source].length;i++) {
-                colors[i] = style.lineColor;
+    {   
+        for (let i=0;i<data.points.length;i++) {
+            let point = data.points[i];
+            let selected = [point.pointIndex];
+            for (let i=0;i<chart.chartData.length;i++) {
+                let item = chart.chartData[i];
+                if (point.data.dataSource === item.dataSource && point.data.series !== item.series) {
+                    let update = {selectedpoints: [selected]};
+                    Plotly.restyle(chartId,update,i);
+                }
             }
-            chart.chartInfo[source]['SeriesStyle' + series] = colors.splice(0);
-        }
-        colors = chart.chartInfo[source]['SeriesStyle' + series].slice(0);
-        colors[pn] = '#FF0000';
-
-        var update = {'marker':{color: colors}};
-        Plotly.restyle(chartId, update, [tn]);
+            widget.updateSelection(point.data.dataSource,selected);
+        } 
     };
 
 
     //This needs to handle the case where some other widget is being selected and we need to select our chart as well.
-    this.handleSelectionUpdate = function (propertyName, selectedRows, selectedRowIndices) {
-    
+    widget.handleSelectionUpdate = function (propertyName, selectedRows, selectedRowIndices) {
+        if (properties['AllowSelection']) {
+            for (let i=0;i<chart.chartData.length;i++) {
+                let data = chart.chartData[i];
+                if (data.dataSource === propertyName) {
+                    let update = { selectedpoints: [selectedRowIndices]};
+                    Plotly.restyle(chartId,update,i);
+                };
+            };
+        }
     };
 
     //its really dumb that the style definition adds px to the font size...

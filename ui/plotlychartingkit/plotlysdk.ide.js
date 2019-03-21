@@ -84,6 +84,12 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
             'defaultValue': true
         };
 
+        properties.SelectedItemStyle = {
+            'description': '',
+            'baseType': 'STYLEDEFINITION',
+            'defaultValue': 'DefaultChartSelectionStyle'
+        };
+
         properties.ChartTitle = {
             'description': TW.IDE.I18NController.translate('tw.labelchart-ide.properties.chart-title.description'),
             'baseType': 'STRING',
@@ -334,7 +340,8 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
         //for some reason, afterLoad doesn't get called when the chart first initialized. This makes sure my axis and series properties
         //are set correctly on the initial render
         chart.setSeriesProperties(widget.getProperty('NumberOfSeries'));
-        chart.setAxesProperties(widget.getProperty('NumberOfAxes'))
+        chart.setAxesProperties('NumberOfXAxes', widget.getProperty('NumberOfXAxes'));
+        chart.setAxesProperties('NumberOfYAxes', widget.getProperty('NumberOfYAxes'));
 
     }
 
