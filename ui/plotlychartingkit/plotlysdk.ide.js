@@ -234,6 +234,14 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
                 'isVisible': true,
                 'isLocalizable': true
             };
+
+            let seriesType = {
+                'description': '',
+                'baseType': 'STRING',
+                'isVisible' : true,
+                'selectOptions': [
+                ]
+            };
                 
             let seriesStyleProperty = {
                 'description': TW.IDE.I18NController.translate('tw.labelchart-ide.series-style-property.description') + seriesNumber,
@@ -276,6 +284,7 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
                 properties['XAxis' + seriesNumber] = axisXProperty;
                 properties['YDataField' + seriesNumber] = dataYProperty;
                 properties['YAxis' + seriesNumber] = axisYProperty;
+                properties['SeriesType' + seriesNumber] = seriesType;
                 properties['SeriesLabel' + seriesNumber] = dataLabelProperty;
                 properties['SeriesStyle' + seriesNumber] = seriesStyleProperty;
                 properties['SeriesStyle' + seriesNumber]['defaultValue'] = 'DefaultChartStyle' + seriesNumber;

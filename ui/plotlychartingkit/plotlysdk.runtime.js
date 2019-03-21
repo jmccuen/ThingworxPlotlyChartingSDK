@@ -101,6 +101,7 @@ function TWRuntimeChart(widget) {
             let hoverStyle = TW.getStyleFromStyleDefinition(properties['TooltipStyle' + series],'DefaultChartStyle' + series);
             let line = new Object();
             line.color = style.lineColor;
+            line.dash = style.lineStyle;
             trace.line = line;
             trace.name = properties['SeriesLabel' + series];
             trace.hoverinfo = 'none';
