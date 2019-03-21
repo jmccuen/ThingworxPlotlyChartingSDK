@@ -3,6 +3,8 @@
     it has functions to help render and draw a chart and extends the widget by adding 
     additional function callbacks so they do not need to be called by the instance of 
     the chart widget and thus repeated for every chart.
+
+    All chart settings can be found in the Plotly reference documentation: https://plot.ly/javascript/reference
 */ 
 function TWRuntimeChart(widget) {
     let properties = widget.properties;
@@ -93,19 +95,32 @@ function TWRuntimeChart(widget) {
         for (let i=1;i<=data.length;i++) {
             trace = data[i-1];
             let series = trace.series;
-            if (trace.type == "scatter") {
-                let style = TW.getStyleFromStyleDefinition(properties['SeriesStyle' + series],'DefaultChartStyle' + series);
-                let line = new Object();
-                line.color = style.lineColor;
-                trace.line = line;
-                trace.name = properties['SeriesLabel' + series];
-                if (properties['XAxis' + series] !== 'x1') {
-                    trace.xaxis = properties['XAxis' + series];
-                };
-                if (properties['YAxis' + series] !== 'y1') {
-                    trace.yaxis = properties['YAxis' + series];
-                };
+            //this seems like it shouldnt just apply to scatter...
+            //if (trace.type == "scatter") {
+            let style = TW.getStyleFromStyleDefinition(properties['SeriesStyle' + series],'DefaultChartStyle' + series);
+            let hoverStyle = TW.getStyleFromStyleDefinition(properties['TooltipStyle' + series],'DefaultChartStyle' + series);
+            let line = new Object();
+            line.color = style.lineColor;
+            trace.line = line;
+            trace.name = properties['SeriesLabel' + series];
+            trace.hoverinfo = 'none';
+            if (properties['ShowTooltip' + series]) {
+                trace.hoverinfo = properties['TooltipFormat' + series];
             }
+            trace.hoverlabel = new Object();
+            trace.hoverlabel.bgcolor = hoverStyle.backgroundColor;
+            trace.hoverlabel.bordercolor = hoverStyle.lineColor;
+            trace.hoverlabel.font = {
+                color: hoverStyle.foregroundColor,
+                size: Number(getFontSize(hoverStyle.textSize))
+            }
+            if (properties['XAxis' + series] !== 'x1') {
+                trace.xaxis = properties['XAxis' + series];
+            };
+            if (properties['YAxis' + series] !== 'y1') {
+                trace.yaxis = properties['YAxis' + series];
+            };
+            //}
 
             let exists = false;
             for (let i = 0; i<chart.chartData.length;i++) {
@@ -126,7 +141,8 @@ function TWRuntimeChart(widget) {
     //This will highlight a bar or marker and make sure that the others go back to their original color. 
     //Somewhat annoying that you need the whole color array for each point to do this
     //We just get the length of the series from chart info (this has to be set by the chart widget) and grab the series style for our array
-    //and then we can store it in our chart info for later use. Then we update the selected marker
+    //and then we can store it in our chart info for later use. Then we update the selected marker.
+    //We need to add in tracking for what index this point is on the infotable so we can update thingworx about the selection
     this.handleClick = function(data)
     {
         let pn='',
@@ -155,19 +171,24 @@ function TWRuntimeChart(widget) {
         Plotly.restyle(chartId, update, [tn]);
     };
 
+
+    //This needs to handle the case where some other widget is being selected and we need to select our chart as well.
     this.handleSelectionUpdate = function (propertyName, selectedRows, selectedRowIndices) {
     
     };
 
+    //its really dumb that the style definition adds px to the font size...
     function getFontSize(text) {
     	return TW.getTextSize(text).split(": ")[1].replace("px;","");
     };
 
+    //this is just a helper function that translates an infotable with fields into an x y object for plotly
     this.getXY = function(it) {
 		const rows = it.ActualDataRows;
 		let values = new Object();
         let x = [];       
         let y = new Object();
+        let text = new Object();
         
         for (let i=0;i<rows.length;i++) {
         	x.push(rows[i][properties['XAxisField']]);
@@ -175,9 +196,15 @@ function TWRuntimeChart(widget) {
        		if (properties['YDataField' + j]) {
 					if (!y[j]) {	
 						y[j] = new Object();
-						y[j].values = [];
+                        y[j].values = [];
+                        if (properties['ShowTooltip' + j] && properties['TooltipText' + j]) {
+                            y[j].text = [];
+                        };
 					};
-		    		y[j].values.push(rows[i][properties['YDataField' + j]]);
+                    y[j].values.push(rows[i][properties['YDataField' + j]]);
+                    if (properties['ShowTooltip' + j] && properties['TooltipText' + j]) {
+                        y[j].text.push(rows[i][properties['TooltipText' + j]]);
+                    };
        		};
        	};
         };
@@ -186,12 +213,16 @@ function TWRuntimeChart(widget) {
         values.y = y;
         
         return values;
-	}
+    }
+    
+    //This is another helper function that translates an infotable with no fields into an x y object for plotly
+    //we use this when we want to dynamically generate a chart without setting each series field. In that case we
+    //render every field up to our field count, as long as its a number or integer value
 	this.getDynamicXY = function(it) {
 		const rows = it.ActualDataRows;
 		let values = new Object();
         let x = [];
-        let y = {};
+        let y = new Object();
 		let shape = it.DataShape;
 		
 		for (let i=0;i<rows.length;i++) {
@@ -214,6 +245,7 @@ function TWRuntimeChart(widget) {
         return values
     };
     
+    //This actually builds out axis object for each of our axes. This is called when the chart is rendered.
     function getAxisObject(xy,i) {
         
         let style = TW.getStyleFromStyleDefinition(properties[xy + 'AxisStyle' + i],'DefaultChartStyle' + i);
@@ -248,9 +280,8 @@ function TWRuntimeChart(widget) {
         axis.gridstyle = gridStyle.backgroundColor;
         if (i>1) {
             axis.overlaying = xy.toLowerCase();
-            axis.side = properties[xy + 'AxisSide' + i];
             axis.position = properties[xy + 'AxisPosition' + i];
-            axis.anchor = properties[xy + 'AxisAnchor' + i]
+            axis.anchor = 'free';
         }
         return axis;
     }

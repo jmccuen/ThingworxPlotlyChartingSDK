@@ -227,7 +227,7 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
                 'isVisible': true
             };  
 
-            var dataLabelProperty = {
+            let dataLabelProperty = {
                 'description': TW.IDE.I18NController.translate('tw.labelchart-ide.data-label-property.description') + seriesNumber,
                 'baseType': 'STRING',
                 'isBindingTarget': true,
@@ -241,6 +241,34 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
                 'isVisible': true
             };
 
+            let seriesTooltipVisible = {
+                'description': '',
+                'baseType': 'BOOLEAN',
+                'defaultValue': true
+            };
+
+            let seriesTooltipStyle = {
+                'description': '',
+                'baseType': 'STYLEDEFINITION',
+                'isVisible': true
+            };
+
+            let seriesTooltipFormat = {
+                'description': '',
+                'baseType': 'STRING',
+                'isBindingTarget': true,
+                'isVisible': true,
+                'isLocalizable': true
+            };
+
+            let tooltipText = {
+                'description': '',
+                'baseType': 'FIELDNAME',
+                'sourcePropertyName': 'Data',
+                'isBindingTarget': false,
+                'isVisible': true
+            };
+
             
             if(multipleData) { properties['DataSource' + seriesNumber] = dataSourceProperty };
             if (type !== 'pie') { 
@@ -251,6 +279,11 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
                 properties['SeriesLabel' + seriesNumber] = dataLabelProperty;
                 properties['SeriesStyle' + seriesNumber] = seriesStyleProperty;
                 properties['SeriesStyle' + seriesNumber]['defaultValue'] = 'DefaultChartStyle' + seriesNumber;
+                properties['ShowTooltip' + seriesNumber] = seriesTooltipVisible;
+                properties['TooltipStyle' + seriesNumber] = seriesTooltipStyle;
+                properties['TooltipStyle' + seriesNumber]['defaultValue'] = 'DefaultChartStyle' + seriesNumber;
+                properties['TooltipFormat' + seriesNumber] = seriesTooltipFormat;
+                properties['TooltipText' + seriesNumber] = tooltipText;
                 
             };
             if (type === '3d') { properties['ZDataField' + seriesNumber] = dataZProperty };
@@ -350,14 +383,16 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
                 properties['properties']['XAxisTitle' + axis]['isVisible'] = xVis;
                 properties['properties']['XAxisType' + axis]['isVisible'] = xVis;
                 properties['properties']['XAxisTickFormat' + axis]['isVisible'] = xVis;
+                if (axis>1) { properties['properties']['XAxisPosition' + axis]['isVisible'] = xVis };
                 xValues.push({ value: 'x' + axis, text: 'x' + axis });
             }
 
-            for (axis = value + 1; axis <= this.MAX_AXES; axis++) {
+            for (let axis = value + 1; axis <= chart.MAX_AXES; axis++) {
                 properties['properties']['XAxisStyle' + axis]['isVisible'] = false;
                 properties['properties']['XAxisTitle' + axis]['isVisible'] = false;
                 properties['properties']['XAxisType' + axis]['isVisible'] = false;
                 properties['properties']['XAxisTickFormat' + axis]['isVisible'] = false;
+                properties['properties']['XAxisPosition' + axis]['isVisible'] = false;
             }
 
             //This is really clever. It sets up the drop down for which x axis to use 
@@ -379,14 +414,16 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
                 properties['properties']['YAxisTitle' + axis]['isVisible'] = yVis;
                 properties['properties']['YAxisType' + axis]['isVisible'] = yVis;
                 properties['properties']['YAxisTickFormat' + axis]['isVisible'] = yVis;
+                if (axis>1) { properties['properties']['YAxisPosition' + axis]['isVisible'] = yVis };
                 yValues.push({ value: 'y' + axis, text: 'y' + axis });
             }
 
-            for (axis = value + 1; axis <= this.MAX_AXES; axis++) {
+            for (let axis = value + 1; axis <= chart.MAX_AXES; axis++) {
                 properties['properties']['YAxisStyle' + axis]['isVisible'] = false;
                 properties['properties']['YAxisTitle' + axis]['isVisible'] = false;
                 properties['properties']['YAxisType' + axis]['isVisible'] = false;
                 properties['properties']['YAxisTickFormat' + axis]['isVisible'] = false;
+                properties['properties']['YAxisPosition' + axis]['isVisible'] = false;
             }
 
             
@@ -404,6 +441,7 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
         let properties = widget.allWidgetProperties();
         let seriesNumber;
         let singleSource = true; 
+        let showTooltip = widget.getProperty('ShowTooltip');
         if (multipleData) { singleSource = widget.getProperty('SingleDataSource') };
         if (type !== 'pie') {
             for (seriesNumber = 1; seriesNumber <= value; seriesNumber++) {
@@ -413,19 +451,27 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
                 properties['properties']['YAxis' + seriesNumber]['isVisible'] = true;
                 properties['properties']['SeriesLabel' + seriesNumber]['isVisible'] = true;
                 properties['properties']['SeriesStyle' + seriesNumber]['isVisible'] = true;  
+                properties['properties']['ShowTooltip' + seriesNumber]['isVisible'] = true;  
+                properties['properties']['TooltipStyle' + seriesNumber]['isVisible'] = true;
+                properties['properties']['TooltipFormat' + seriesNumber]['isVisible'] = true;    
+                properties['properties']['TooltipText' + seriesNumber]['isVisible'] = true; 
                 //this property doesnt exist if there isn't multiple data sources, so you cant set the isVisible of undefined
                 if (multipleData) {
                     properties['properties']['DataSource' + seriesNumber]['isVisible'] = !singleSource
                 }
             }
 
-            for (seriesNumber = value + 1; seriesNumber <= this.MAX_SERIES; seriesNumber++) {
+            for (seriesNumber = value + 1; seriesNumber <= chart.MAX_SERIES; seriesNumber++) {
                 properties['properties']['XDataField' + seriesNumber]['isVisible'] = false;
                 properties['properties']['XAxis' + seriesNumber]['isVisible'] = false;
                 properties['properties']['YDataField' + seriesNumber]['isVisible'] = false;
                 properties['properties']['YAxis' + seriesNumber]['isVisible']= false;
                 properties['properties']['SeriesLabel' + seriesNumber]['isVisible'] = false;
                 properties['properties']['SeriesStyle' + seriesNumber]['isVisible'] = false;
+                properties['properties']['ShowTooltip' + seriesNumber]['isVisible'] = false;  
+                properties['properties']['TooltipStyle' + seriesNumber]['isVisible'] = false;
+                properties['properties']['TooltipFormat' + seriesNumber]['isVisible'] = false; 
+                properties['properties']['TooltipText' + seriesNumber]['isVisible'] = false; 
                 if (multipleData) {
                     properties['properties']['DataSource' + seriesNumber]['isVisible'] = false;
                 }
@@ -434,16 +480,18 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
 
         //This changes the source property data field when there are multiple sources.
         if (singleSource) {
-            for (seriesNumber = 1; seriesNumber <= this.MAX_SERIES; seriesNumber++) {
+            for (seriesNumber = 1; seriesNumber <= chart.MAX_SERIES; seriesNumber++) {
                 properties['properties']['XDataField' + seriesNumber]['sourcePropertyName'] = 'Data';
                 properties['properties']['YDataField' + seriesNumber]['sourcePropertyName'] = 'Data';
+                properties['properties']['TooltipText' + seriesNumber]['sourcePropertyName'] = 'Data';
             }
             properties['properties']['Data']['isVisible'] = true;
             properties['properties']['XAxisField']['isVisible'] = true;
         } else {
-            for (seriesNumber = 1; seriesNumber <= this.MAX_SERIES; seriesNumber++) {
+            for (seriesNumber = 1; seriesNumber <= chart.MAX_SERIES; seriesNumber++) {
                 properties['properties']['XDataField' + seriesNumber]['sourcePropertyName'] = 'DataSource' + seriesNumber;
                 properties['properties']['YDataField' + seriesNumber]['sourcePropertyName'] = 'DataSource' + seriesNumber;
+                properties['properties']['TooltipText' + seriesNumber]['sourcePropertyName'] = 'DataSource' + seriesNumber;
             }
             properties['properties']['Data']['isVisible'] = false;
             properties['properties']['XAxisField']['isVisible'] = false;
@@ -676,8 +724,6 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
             properties[axis + 'AxisType' + i] = axisType;
             properties[axis + 'AxisTickFormat' + i] = axisTickFormat;
             if (i>1) {
-                properties[axis + 'AxisSide' + i] = axisSide;
-                properties[axis + 'AxisAnchor' + i] = axisAnchor;
                 properties[axis + 'AxisPosition' + i] = axisPosition;
             }
 
