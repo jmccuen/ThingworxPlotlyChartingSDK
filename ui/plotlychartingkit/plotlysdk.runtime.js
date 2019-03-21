@@ -1,19 +1,31 @@
+/*
+    This file is essentially a partial class for a charting widget in the runtime
+    it has functions to help render and draw a chart and extends the widget by adding 
+    additional function callbacks so they do not need to be called by the instance of 
+    the chart widget and thus repeated for every chart.
+*/ 
 function TWRuntimeChart(widget) {
     let properties = widget.properties;
     let chartId;
     let chart = this;
     
-
+    //expose the layout and chart data so you can access them from within the source widget
+    //This gives the user more control over the chart and allows overriding the sdk
     this.layout = new Object;
     this.chartData = [];
     this.chartInfo = {};
     this.chartDiv;
+
+    //this just lets the chart widget know if its already drawn the chart at least once
+    //this is useful for streaming charts that might want to draw once and then extend after the first draw
     this.plotted = false;
 
+    //This should be called in afterRender and it renders the chart onto the div with the appropriate layout settings
     this.render = function() {
         chartId = widget.jqElementId;
 
         chart.chartData = [];
+        //need the actual div to add events
         let chartDiv = document.getElementById(widget.jqElementId);
 
         chart.layout = {
@@ -26,6 +38,7 @@ function TWRuntimeChart(widget) {
             plot_bgcolor: '#fff'
         };
 
+        //set up the layout
         if (properties['ShowTitle']) {
             let titleStyle = TW.getStyleFromStyleDefinition(properties['ChartTitleStyle'],'DefaultChartTitleStyle');
             let title = new Object();
@@ -46,6 +59,7 @@ function TWRuntimeChart(widget) {
 
         chart.layout.margin = margin;
 
+        //Set up the axes. Axis 1 is a bit different from the others, because there is no trailing number for them
         chart.layout.xaxis = getAxisObject('X',1);
         chart.layout.yaxis = getAxisObject('Y',1);
 
@@ -56,19 +70,24 @@ function TWRuntimeChart(widget) {
             chart.layout['yaxis' + i] = getAxisObject('Y',i);
         }
         
+        //draw the chart
         Plotly.newPlot(chartDiv, chart.chartData, chart.layout, {displayModeBar: false});
+
+        //Add our click event
         if (properties['AllowSelection']) {
             chartDiv.on('plotly_click', chart.handleClick);
         }
 
     }
 
+    //extend takes in just new data and adds it to the trace. Need to pass in trace number here, right now this only works for index 0.
     this.extend = function(data) {
         Plotly.extendTraces(chartId,data, [0]);
 
     }
 
 
+    //this is where we actually get in data and draw it onto the chart
     this.draw = function(data) {
         chart.plotted = true;
         for (let i=1;i<=data.length;i++) {
@@ -104,6 +123,10 @@ function TWRuntimeChart(widget) {
         Plotly.react(chartId,chart.chartData,chart.layout,{displayModeBar: false});
     }
 
+    //This will highlight a bar or marker and make sure that the others go back to their original color. 
+    //Somewhat annoying that you need the whole color array for each point to do this
+    //We just get the length of the series from chart info (this has to be set by the chart widget) and grab the series style for our array
+    //and then we can store it in our chart info for later use. Then we update the selected marker
     this.handleClick = function(data)
     {
         let pn='',

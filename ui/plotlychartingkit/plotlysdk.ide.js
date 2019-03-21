@@ -1,3 +1,11 @@
+/*
+    This file is essentially a partial class for a charting widget in the mashup builder
+    it has functions to help generate standard chart properties and it
+    extends the widget by adding additional function callbacks so they 
+    do not need to be called by the instance of the chart widget for every chart.
+
+    All chart settings can be found in the Plotly reference documentation: https://plot.ly/javascript/reference
+*/ 
 function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
 
     this.MAX_SERIES = maxSeries;
@@ -6,6 +14,9 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
     let chartId;
     let chart = this;
 
+    //Get all the standard properties for charts. These properties are shared across all charts by types
+    //Sometimes I will not group together things in if statements, such as if !== pie. This is because
+    //the order the properties are added is the order they appear in the composer
     this.getProperties = function() {
         let properties = new Object();
 
@@ -156,7 +167,8 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
                 'isBindingTarget': false,
                 'isVisible': true
             };
-            
+            //Need to get properties for X and Y unless I am a pie chart
+            //TODO: Add something for Z for 3d charts. It should be similar
             properties = getAxisProperties(properties,'X');
             properties = getAxisProperties(properties,'Y');
 
@@ -257,7 +269,9 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
         return result;
 
     }
-
+    //This renders an example chart, so you can see it in the mashup builder. May replace with a static image later
+    //it would be cool if the styles and everything updated, here, too, but I would need to build a helper class that handled
+    //that for the ide and runtime.
     this.render = function() {
         chartId = widget.jqElementId;
 
@@ -275,15 +289,21 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
         
         Plotly.newPlot(chartId, chartData, layout, {displayModeBar: false});
 
+        //for some reason, afterLoad doesn't get called when the chart first initialized. This makes sure my axis and series properties
+        //are set correctly on the initial render
         chart.setSeriesProperties(widget.getProperty('NumberOfSeries'));
         chart.setAxesProperties(widget.getProperty('NumberOfAxes'))
 
     }
 
+    //this function is somewhat duplicated in the runtime, which isn't great
+    //this just draws the data onto the chart div
     this.draw = function(data) {
         Plotly.react(chartId,data,layout,{displayModeBar: false});
     }
 
+    //show or hide axis properties based on other settings
+    //its kind of dumb that allWidgetProperties doesn't have the values;
     this.setAxesProperties = function (name,value) {
         let properties = widget.allWidgetProperties();
 
@@ -340,6 +360,10 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
                 properties['properties']['XAxisTickFormat' + axis]['isVisible'] = false;
             }
 
+            //This is really clever. It sets up the drop down for which x axis to use 
+            //based on the values created above, only for the number of axis the user has configured
+            //we do the same thing for Y below. This is nice, because that way you dont need to configure
+            //the axis settings for every series, like in the label chart
             for (let seriesNumber = 1; seriesNumber <= this.MAX_SERIES;seriesNumber++) {
                 properties['properties']['XAxis' + seriesNumber]['selectOptions'] = xValues;
             }
@@ -365,6 +389,7 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
                 properties['properties']['YAxisTickFormat' + axis]['isVisible'] = false;
             }
 
+            
             for (let seriesNumber = 1; seriesNumber <= this.MAX_SERIES;seriesNumber++) {
                 properties['properties']['YAxis' + seriesNumber]['selectOptions'] = yValues;
             }
@@ -374,6 +399,7 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
         
     }
 
+    //Same thing as above, but for series instead of axes.
     this.setSeriesProperties = function (value) {
         let properties = widget.allWidgetProperties();
         let seriesNumber;
@@ -387,6 +413,7 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
                 properties['properties']['YAxis' + seriesNumber]['isVisible'] = true;
                 properties['properties']['SeriesLabel' + seriesNumber]['isVisible'] = true;
                 properties['properties']['SeriesStyle' + seriesNumber]['isVisible'] = true;  
+                //this property doesnt exist if there isn't multiple data sources, so you cant set the isVisible of undefined
                 if (multipleData) {
                     properties['properties']['DataSource' + seriesNumber]['isVisible'] = !singleSource
                 }
@@ -405,6 +432,7 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
             }
         }
 
+        //This changes the source property data field when there are multiple sources.
         if (singleSource) {
             for (seriesNumber = 1; seriesNumber <= this.MAX_SERIES; seriesNumber++) {
                 properties['properties']['XDataField' + seriesNumber]['sourcePropertyName'] = 'Data';
@@ -422,6 +450,7 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
         }
     }
 
+    //I dont think this actually works in the IDE. Need to test.
     widget.resize = function(width,height) {
         let update = {
             width: width,
@@ -431,12 +460,15 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
         Plotly.relayout(widget.jqElementId, update);
     }
 
+    //This gets called when the widget is 'loaded', but apparently not on initial render. It makes sure when you go back into editing the mashup,
+    //that all of the properties are visible that need to be for the axis and series.
     widget.afterLoad = function() {
         chart.setSeriesProperties(widget.getProperty('NumberOfSeries'));
         chart.setAxesProperties('NumberOfXAxes', widget.getProperty('NumberOfXAxes'));
         chart.setAxesProperties('NumberOfYAxes', widget.getProperty('NumberOfYAxes'));
     };
 
+    //If you change some of these properties, other properties become available.
     widget.afterSetProperty = function (name, value) {
         let properties = widget.allWidgetProperties();
 
@@ -453,6 +485,7 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
         };
     };
 
+    //validate property values before setting them. Still need to add a bunch of these for the number properties that go from 0-1;
     widget.beforeSetProperty = function (name, value) {
         if (name === 'NumberOfSeries') {
             value = parseInt(value, 10);
@@ -466,6 +499,8 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
         }
     };
 
+    //Gets the X and Y properties. The axis settings can all be per axis, but some other them I decided to be shared across all axes
+    //This is just so the widget doesnt get too bloated and config heavy
     function getAxisProperties(properties, axis) {
         properties[axis + "AxesVisible"] =  {
             'description': '',
@@ -554,8 +589,6 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
             'defaultValue': 'DefaultChartTitleStyle'
         };
 
-        
-        //we duplicate this call below so that the axes end up in the right order...
         for (let i = 1; i <= chart.MAX_AXES; i++) {
 
             let axisStyle =  {
