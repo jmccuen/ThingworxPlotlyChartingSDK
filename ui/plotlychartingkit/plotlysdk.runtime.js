@@ -88,6 +88,39 @@ function TWRuntimeChart(widget) {
 
     }
 
+    this.update = function(info) {
+        if (info.TargetProperty === "ChartTitle") {
+            let update = {
+                title: info.SinglePropertyValue
+            };
+            Plotly.relayout(chartId, update);
+        };
+
+        for (let i=1;i<=properties['NumberOfXAxes'];i++) {
+            if (info.TargetProperty === 'XAxisTitle' + i) {
+                let update = new Object();
+                if (i===1) {
+                    update['xaxis'] = { title: info.SinglePropertyValue };
+                } else {
+                    update['xaxis' + i] = { title: info.SinglePropertyValue };
+                }
+                Plotly.relayout(chartId, update);
+            };
+        };
+
+        for (let i=1;i<=properties['NumberOfYAxes'];i++) {
+            if (info.TargetProperty === 'YAxisTitle' + i) {
+                let update = new Object();
+                if (i===1) {
+                    update['yaxis'] = { title: info.SinglePropertyValue };
+                } else {
+                    update['yaxis' + i] = { title: info.SinglePropertyValue };
+                }
+                Plotly.relayout(chartId, update);
+            };
+        }
+    };
+
 
     //this is where we actually get in data and draw it onto the chart
     this.draw = function(data) {
@@ -99,10 +132,11 @@ function TWRuntimeChart(widget) {
             //if (trace.type == "scatter") {
             let style = TW.getStyleFromStyleDefinition(properties['SeriesStyle' + series],'DefaultChartStyle' + series);
             let hoverStyle = TW.getStyleFromStyleDefinition(properties['TooltipStyle' + series],'DefaultChartStyle' + series);
-            let line = new Object();
-            line.color = style.lineColor;
-            line.dash = style.lineStyle;
-            trace.line = line;
+            if (!trace.line) {
+                trace.line = new Object();
+            }
+            trace.line.color = style.lineColor;
+            trace.line.dash = style.lineStyle;
             trace.name = properties['SeriesLabel' + series];
             trace.hoverinfo = 'none';
             if (properties['ShowTooltip' + series]) {

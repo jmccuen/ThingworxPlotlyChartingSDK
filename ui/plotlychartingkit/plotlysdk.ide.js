@@ -460,6 +460,7 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
                 properties['properties']['YAxis' + seriesNumber]['isVisible'] = true;
                 properties['properties']['SeriesLabel' + seriesNumber]['isVisible'] = true;
                 properties['properties']['SeriesStyle' + seriesNumber]['isVisible'] = true;  
+                properties['properties']['SeriesType' + seriesNumber]['isVisible'] = true;  
                 properties['properties']['ShowTooltip' + seriesNumber]['isVisible'] = true;  
                 properties['properties']['TooltipStyle' + seriesNumber]['isVisible'] = true;
                 properties['properties']['TooltipFormat' + seriesNumber]['isVisible'] = true;    
@@ -477,6 +478,7 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
                 properties['properties']['YAxis' + seriesNumber]['isVisible']= false;
                 properties['properties']['SeriesLabel' + seriesNumber]['isVisible'] = false;
                 properties['properties']['SeriesStyle' + seriesNumber]['isVisible'] = false;
+                properties['properties']['SeriesType' + seriesNumber]['isVisible'] = false;  
                 properties['properties']['ShowTooltip' + seriesNumber]['isVisible'] = false;  
                 properties['properties']['TooltipStyle' + seriesNumber]['isVisible'] = false;
                 properties['properties']['TooltipFormat' + seriesNumber]['isVisible'] = false; 
