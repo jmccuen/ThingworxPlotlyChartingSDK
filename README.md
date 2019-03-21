@@ -29,9 +29,9 @@ Charts share many things in common:
     * Pan
     * Resize
 
-Many  of these items are the same across charts of all types, or are shared by several sub types of charts. When creating widgets in Thingworx, every new widget has to solve these problems again for themsevles. This causes a lot of boilerplate code, repetative code, large file size of the combined widget javascript file, difficulty in fixing bugs, difficulty in improving performance, difficulty in maintaining old charts or creating new charts, difficultly in implementing new features across charts, etc.
+Many of these items are the same across charts of all types, or are shared by several subtypes. When creating widgets in Thingworx, every new widget has to solve these problems again for themsevles. This causes a lot of boilerplate code, repetition, large file size of the combined widget javascript files, and makes many things -- such as fixing bugs, improving performance, maintaining old charts, creating new charts, and implementing new features across charts -- very difficult.
 
-This SDK simplifies all of these things by putting common functionality in one place. Contained in this package is a widget extension with a common charting library -- plotly.js, a popular open-source MIT licensed library -- and two custom Thingworx wrapper libraries for the IDE and runtime, respectively.
+This SDK simplifies all of these things by putting common functionality in one place. Contained in this package is a widget extension with a common charting library -- plotly.js, a popular open-source MIT licensed library -- and two custom Thingworx wrapper libraries for the IDE and Runtime, respectively.
 
 ## How to use
 
@@ -39,13 +39,16 @@ First, install the current build of the extension, kit.zip, on your instance of 
 
 Begin widget development as normal.
 
+Example implementations are available in the link at the top of this repository: http://roicentersvn.ptcnet.ptc.com/jmccuen/PlotlyPlots
+
+
 ### IDE
 At the beginning of your widget ide.js, add the following:
 
 ```javascript
 let chart = new TWIDEChart(this,MAX_SERIES,TYPE,MAX_AXES,MULTIPLE_DATASOURCES);
 ```
-Where 'this' is your widget instance and the rest are the parameters as named. This will create a new widget for you based on the type of widget you are creating from the input parameters. All you need to do now is implement widgetIconUrl, widgetProperties, renderHtml, and afterRender.
+Where 'this' is your widget instance and the rest are the parameters as named. Currently supported types are 'pie', '2d', and '3d' -- these may be extended as needs arise. This call will create a new widget for you based on the type of widget you are creating. All you need to do now is implement widgetIconUrl, widgetProperties, renderHtml, and afterRender. Some of these may be moved to the SDK at a later date.
 
 #### widgetIconUrl
 Choose the location of your icon url as normal
@@ -62,7 +65,9 @@ Most of the standard widget properties are already available and can be grabbed 
 	};
 ```
 
-The chart from above contains the service getProperites() which should return most of the normal properties. Make sure to set the name of your chart using properties.name. **Additional properties can be added directly to properties.properties**.
+The chart from above contains the service getProperties() which should return most of the properties that charts have in common. Make sure to set the name of your chart using properties.name. **Additional properties can be added directly to properties.properties**.
+
+*Note*: Thingworx orders properties in the mashup builder based on the order in which they are added to the JSON object. This means extended properties will come at the bottom of the properties object. We are currently working on an approach to solve this problem, so that properties can be inserted in logical places.
 
 
 #### renderHtml
@@ -97,7 +102,13 @@ At the begining of afterRender, makes sure to render the chart:
 
 #### updateProperty
 
-Update property is where most of the work for your widget will happen. Here, you will need to take in an InfoTable and produce the correct format for Plotly to render. Please see https://plot.ly/javascript/ for details. When you have created your data array, call chart.draw(data).
+First, make sure to tell the chart a property has been updated:
+```javascript
+    chart.update(updatePropertyInfo);
+```
+This ensures that common bindings -- such as Chart Title or Axis Title -- are updated automatically.
+
+Then, handle the update as it relates specifically to your chart. Update property is where most of the work for your widget will happen. Here, you will need to take in an InfoTable and produce the correct format for Plotly to render. Please see https://plot.ly/javascript/ for details. When you have created your data array, call chart.draw(data).
 
 Example data format:
 ```javascript
@@ -132,7 +143,7 @@ chart.draw(data);
 All other callbacks are handled by the SDK, but can be overrriden as you see fit
 
 
-## Helper functions
+## Helper functions and properties
 There are many helper functions exposed to make translating your chart into the correct data format easier. 
 
 ### Runtime
@@ -147,5 +158,17 @@ chart.getDynamicXY(it);
 ```
 
 GetDynamicXY will take an InfoTable and, as long as an X Axis is mapped, will map the remaining items that are NUMBERS or INTEGERS to corresponding traces, even if no selection has been made for the series. The NumberOfSeries properties are still enforced.
+
+```javascript
+chart.layout
+chart.chartData
+chart.chartInfo
+```
+
+chart.layout is the layout object that the charting SDK uses when rendering Plotly. You have full access to this and can update it at any time. You can also call Plotly directly on the chart div, using functions such as relayout, as necessary.
+
+chart.chartData is the actual dataset that Plotly is rendering. You can make modifications directly to this item and update any changes with Plotly.react
+
+chart.chartInfo is an object you can use to store any additional information you would like to about your chart for future reference. This object is not used by the charting SDK.
 
 

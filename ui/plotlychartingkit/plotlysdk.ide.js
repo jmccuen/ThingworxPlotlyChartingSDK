@@ -339,9 +339,11 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
 
         //for some reason, afterLoad doesn't get called when the chart first initialized. This makes sure my axis and series properties
         //are set correctly on the initial render
-        chart.setSeriesProperties(widget.getProperty('NumberOfSeries'));
-        chart.setAxesProperties('NumberOfXAxes', widget.getProperty('NumberOfXAxes'));
-        chart.setAxesProperties('NumberOfYAxes', widget.getProperty('NumberOfYAxes'));
+        if (type !== 'pie') {
+            chart.setSeriesProperties(widget.getProperty('NumberOfSeries'));
+            chart.setAxesProperties('NumberOfXAxes', widget.getProperty('NumberOfXAxes'));
+            chart.setAxesProperties('NumberOfYAxes', widget.getProperty('NumberOfYAxes'));
+        }
 
     }
 
@@ -459,40 +461,38 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
         let singleSource = true; 
         let showTooltip = widget.getProperty('ShowTooltip');
         if (multipleData) { singleSource = widget.getProperty('SingleDataSource') };
-        if (type !== 'pie') {
-            for (seriesNumber = 1; seriesNumber <= value; seriesNumber++) {
-                properties['properties']['XDataField' + seriesNumber]['isVisible'] = !singleSource
-                properties['properties']['XAxis' + seriesNumber]['isVisible'] = true;
-                properties['properties']['YDataField' + seriesNumber]['isVisible'] = true;
-                properties['properties']['YAxis' + seriesNumber]['isVisible'] = true;
-                properties['properties']['SeriesLabel' + seriesNumber]['isVisible'] = true;
-                properties['properties']['SeriesStyle' + seriesNumber]['isVisible'] = true;  
-                properties['properties']['SeriesType' + seriesNumber]['isVisible'] = true;  
-                properties['properties']['ShowTooltip' + seriesNumber]['isVisible'] = true;  
-                properties['properties']['TooltipStyle' + seriesNumber]['isVisible'] = true;
-                properties['properties']['TooltipFormat' + seriesNumber]['isVisible'] = true;    
-                properties['properties']['TooltipText' + seriesNumber]['isVisible'] = true; 
-                //this property doesnt exist if there isn't multiple data sources, so you cant set the isVisible of undefined
-                if (multipleData) {
-                    properties['properties']['DataSource' + seriesNumber]['isVisible'] = !singleSource
-                }
+        for (seriesNumber = 1; seriesNumber <= value; seriesNumber++) {
+            properties['properties']['XDataField' + seriesNumber]['isVisible'] = !singleSource
+            properties['properties']['XAxis' + seriesNumber]['isVisible'] = true;
+            properties['properties']['YDataField' + seriesNumber]['isVisible'] = true;
+            properties['properties']['YAxis' + seriesNumber]['isVisible'] = true;
+            properties['properties']['SeriesLabel' + seriesNumber]['isVisible'] = true;
+            properties['properties']['SeriesStyle' + seriesNumber]['isVisible'] = true;  
+            properties['properties']['SeriesType' + seriesNumber]['isVisible'] = true;  
+            properties['properties']['ShowTooltip' + seriesNumber]['isVisible'] = true;  
+            properties['properties']['TooltipStyle' + seriesNumber]['isVisible'] = true;
+            properties['properties']['TooltipFormat' + seriesNumber]['isVisible'] = true;    
+            properties['properties']['TooltipText' + seriesNumber]['isVisible'] = true; 
+            //this property doesnt exist if there isn't multiple data sources, so you cant set the isVisible of undefined
+            if (multipleData) {
+                properties['properties']['DataSource' + seriesNumber]['isVisible'] = !singleSource
             }
+        }
 
-            for (seriesNumber = value + 1; seriesNumber <= chart.MAX_SERIES; seriesNumber++) {
-                properties['properties']['XDataField' + seriesNumber]['isVisible'] = false;
-                properties['properties']['XAxis' + seriesNumber]['isVisible'] = false;
-                properties['properties']['YDataField' + seriesNumber]['isVisible'] = false;
-                properties['properties']['YAxis' + seriesNumber]['isVisible']= false;
-                properties['properties']['SeriesLabel' + seriesNumber]['isVisible'] = false;
-                properties['properties']['SeriesStyle' + seriesNumber]['isVisible'] = false;
-                properties['properties']['SeriesType' + seriesNumber]['isVisible'] = false;  
-                properties['properties']['ShowTooltip' + seriesNumber]['isVisible'] = false;  
-                properties['properties']['TooltipStyle' + seriesNumber]['isVisible'] = false;
-                properties['properties']['TooltipFormat' + seriesNumber]['isVisible'] = false; 
-                properties['properties']['TooltipText' + seriesNumber]['isVisible'] = false; 
-                if (multipleData) {
-                    properties['properties']['DataSource' + seriesNumber]['isVisible'] = false;
-                }
+        for (seriesNumber = value + 1; seriesNumber <= chart.MAX_SERIES; seriesNumber++) {
+            properties['properties']['XDataField' + seriesNumber]['isVisible'] = false;
+            properties['properties']['XAxis' + seriesNumber]['isVisible'] = false;
+            properties['properties']['YDataField' + seriesNumber]['isVisible'] = false;
+            properties['properties']['YAxis' + seriesNumber]['isVisible']= false;
+            properties['properties']['SeriesLabel' + seriesNumber]['isVisible'] = false;
+            properties['properties']['SeriesStyle' + seriesNumber]['isVisible'] = false;
+            properties['properties']['SeriesType' + seriesNumber]['isVisible'] = false;  
+            properties['properties']['ShowTooltip' + seriesNumber]['isVisible'] = false;  
+            properties['properties']['TooltipStyle' + seriesNumber]['isVisible'] = false;
+            properties['properties']['TooltipFormat' + seriesNumber]['isVisible'] = false; 
+            properties['properties']['TooltipText' + seriesNumber]['isVisible'] = false; 
+            if (multipleData) {
+                properties['properties']['DataSource' + seriesNumber]['isVisible'] = false;
             }
         }
 
@@ -529,9 +529,11 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
     //This gets called when the widget is 'loaded', but apparently not on initial render. It makes sure when you go back into editing the mashup,
     //that all of the properties are visible that need to be for the axis and series.
     widget.afterLoad = function() {
-        chart.setSeriesProperties(widget.getProperty('NumberOfSeries'));
-        chart.setAxesProperties('NumberOfXAxes', widget.getProperty('NumberOfXAxes'));
-        chart.setAxesProperties('NumberOfYAxes', widget.getProperty('NumberOfYAxes'));
+        if (type !== 'pie') {
+            chart.setSeriesProperties(widget.getProperty('NumberOfSeries'));
+            chart.setAxesProperties('NumberOfXAxes', widget.getProperty('NumberOfXAxes'));
+            chart.setAxesProperties('NumberOfYAxes', widget.getProperty('NumberOfYAxes'));
+        }
     };
 
     //If you change some of these properties, other properties become available.
