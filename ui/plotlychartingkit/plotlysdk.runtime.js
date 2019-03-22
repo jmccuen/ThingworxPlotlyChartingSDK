@@ -78,7 +78,7 @@ function TWRuntimeChart(widget) {
         };
         
         //draw the chart
-        chart.plot = Plotly.newPlot(chartDiv, chart.chartData, chart.layout, {displayModeBar: false});
+        Plotly.newPlot(chartDiv, chart.chartData, chart.layout, {displayModeBar: false});
 
         //Add our click event
         if (properties['AllowSelection']) {
@@ -89,7 +89,7 @@ function TWRuntimeChart(widget) {
 
     //extend takes in just new data and adds it to the trace. Need to pass in trace number here, right now this only works for index 0.
     this.extend = function(data) {
-        chart.plot = Plotly.extendTraces(chartId,data, [0]);
+        Plotly.extendTraces(chartId,data, [0]);
 
     }
 
@@ -98,7 +98,19 @@ function TWRuntimeChart(widget) {
             let update = {
                 title: info.SinglePropertyValue
             };
-            chart.plot = Plotly.relayout(chartId, update);
+            Plotly.relayout(chartId, update);
+        };
+
+        for (let i=1;i<=properties['NumberOfSeries'];i++) {
+            if (info.TargetProperty === "SeriesLabel" + i) {
+                for (let j = 0; j<chart.chartData.length;j++) {
+                    if (i == chart.chartData[j].series) {
+                        let update = new Object();
+                        update.name = info.SinglePropertyValue;
+                        Plotly.restyle(chartId, update, j);
+                    };
+                };
+            };
         };
 
         for (let i=1;i<=properties['NumberOfXAxes'];i++) {
@@ -109,7 +121,7 @@ function TWRuntimeChart(widget) {
                 } else {
                     update['xaxis' + i] = { title: info.SinglePropertyValue };
                 }
-                chart.plot = Plotly.relayout(chartId, update);
+                Plotly.relayout(chartId, update);
             };
         };
 
@@ -121,7 +133,7 @@ function TWRuntimeChart(widget) {
                 } else {
                     update['yaxis' + i] = { title: info.SinglePropertyValue };
                 }
-                chart.plot = Plotly.relayout(chartId, update);
+                 Plotly.relayout(chartId, update);
             };
         }
     };
@@ -133,8 +145,7 @@ function TWRuntimeChart(widget) {
         for (let i=1;i<=data.length;i++) {
             trace = data[i-1];
             let series = trace.series;
-            //this seems like it shouldnt just apply to scatter...
-            //if (trace.type == "scatter") {
+
             let style = TW.getStyleFromStyleDefinition(properties['SeriesStyle' + series],'DefaultChartStyle' + series);
             let hoverStyle = TW.getStyleFromStyleDefinition(properties['TooltipStyle' + series],'DefaultChartStyle' + series);
             if (!trace.line) {
@@ -222,30 +233,48 @@ function TWRuntimeChart(widget) {
     };
 
     //this is just a helper function that translates an infotable with fields into an x y object for plotly
-    this.getXY = function(it) {
+    this.getXY = function(it,multi) {
 		const rows = it.ActualDataRows;
-		let values = new Object();
-        let x = [];       
-        let y = new Object();
-        let text = new Object();
-        
+		let values = new Object(),
+        x = [],
+        y = new Object(),
+        xField = 'XAxisField',
+        nSeries = properties['NumberOfSeries']
+               
         for (let i=0;i<rows.length;i++) {
-        	x.push(rows[i][properties['XAxisField']]);
-       	for (let j=1;j<=properties['NumberOfSeries'];j++) {
-       		if (properties['YDataField' + j]) {
-					if (!y[j]) {	
-						y[j] = new Object();
-                        y[j].values = [];
-                        if (properties['ShowTooltip' + j] && properties['TooltipText' + j]) {
-                            y[j].text = [];
+            let j = 1;
+
+            //this is kind of a hack. If we don't do this and the InfoTable coming in has the same YDataField, it will update the chart with the wrong source data
+            //this way it wont do that and will only update the series for the multi data coming in
+            if (multi) { 
+                nSeries = Number(it.TargetProperty.slice(-1));
+                j = nSeries;
+                xField = 'XDataField' + nSeries;
+            };
+        	x.push(rows[i][properties[xField]]);
+            for (j;j<=nSeries;j++) {
+                if (properties['YDataField' + j]) {
+                        if (!y[j]) {	
+                            y[j] = new Object();
+                            y[j].values = [];
+                            y[j].markerColors = [];
+                            if (properties['ShowTooltip' + j] && properties['TooltipText' + j]) {
+                                y[j].text = [];
+                            };
                         };
-					};
-                    y[j].values.push(rows[i][properties['YDataField' + j]]);
-                    if (properties['ShowTooltip' + j] && properties['TooltipText' + j]) {
-                        y[j].text.push(rows[i][properties['TooltipText' + j]]);
-                    };
-       		};
-       	};
+
+                        let formatter = properties['SeriesDataStyle'+j];
+                        if (formatter) {
+                            formatResult = TW.getStyleFromStateFormatting({ DataRow: rows[i], StateFormatting: formatter });
+                            y[j].markerColors.push(formatResult.backgroundColor);
+                        }
+                        
+                        y[j].values.push(rows[i][properties['YDataField' + j]]);
+                        if (properties['ShowTooltip' + j] && properties['TooltipText' + j]) {
+                            y[j].text.push(rows[i][properties['TooltipText' + j]]);
+                        };
+                };
+            };
         };
         
         values.x = x;
@@ -262,16 +291,18 @@ function TWRuntimeChart(widget) {
 		let values = new Object();
         let x = [];
         let y = new Object();
-		let shape = it.DataShape;
+        let shape = it.DataShape;
+        let xField = 'XAxisField';
 		
 		for (let i=0;i<rows.length;i++) {
 			let count = 1;
-			x.push(rows[i][properties['XAxisField']]);
+			x.push(rows[i][properties[xField]]);
 			for (let key in shape) {
 				if (shape[key].baseType === 'NUMBER' || shape[key].baseType === 'INTEGER') {
 					if (!y[count]) {	
 						y[count] = new Object();
-						y[count].values = [];
+                        y[count].values = [];
+                        y[count].markerColors = [];
 					};
 					y[count].values.push(rows[i][key]);
 					count++;

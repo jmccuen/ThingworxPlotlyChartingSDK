@@ -255,6 +255,13 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
                 'isVisible': true
             };
 
+            let seriesDataProperty = {
+                'description': TW.IDE.I18NController.translate('tw.labelchart-ide.series-state-property.description') + seriesNumber,
+                'baseType': 'STATEFORMATTING',
+                'baseTypeInfotableProperty': 'Data',
+                'isVisible': true
+            };
+
             let seriesTooltipVisible = {
                 'description': '',
                 'baseType': 'BOOLEAN',
@@ -284,7 +291,7 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
             };
 
             
-            if(multipleData) { properties['DataSource' + seriesNumber] = dataSourceProperty };
+            if(multipleData) { properties['DataSource' + seriesNumber] = dataSourceProperty; };
             if (type !== 'pie') { 
                 properties['XDataField' + seriesNumber] = dataXProperty;
                 properties['XAxis' + seriesNumber] = axisXProperty;
@@ -294,6 +301,7 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
                 properties['SeriesLabel' + seriesNumber] = dataLabelProperty;
                 properties['SeriesStyle' + seriesNumber] = seriesStyleProperty;
                 properties['SeriesStyle' + seriesNumber]['defaultValue'] = 'DefaultChartStyle' + seriesNumber;
+                properties['SeriesDataStyle' + seriesNumber] = seriesDataProperty;
                 properties['ShowTooltip' + seriesNumber] = seriesTooltipVisible;
                 properties['TooltipStyle' + seriesNumber] = seriesTooltipStyle;
                 properties['TooltipStyle' + seriesNumber]['defaultValue'] = 'DefaultChartStyle' + seriesNumber;
@@ -468,6 +476,7 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
             properties['properties']['YAxis' + seriesNumber]['isVisible'] = true;
             properties['properties']['SeriesLabel' + seriesNumber]['isVisible'] = true;
             properties['properties']['SeriesStyle' + seriesNumber]['isVisible'] = true;  
+            properties['properties']['SeriesDataStyle' + seriesNumber]['isVisible'] = true; 
             properties['properties']['SeriesType' + seriesNumber]['isVisible'] = true;  
             properties['properties']['ShowTooltip' + seriesNumber]['isVisible'] = true;  
             properties['properties']['TooltipStyle' + seriesNumber]['isVisible'] = true;
@@ -486,6 +495,7 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
             properties['properties']['YAxis' + seriesNumber]['isVisible']= false;
             properties['properties']['SeriesLabel' + seriesNumber]['isVisible'] = false;
             properties['properties']['SeriesStyle' + seriesNumber]['isVisible'] = false;
+            properties['properties']['SeriesDataStyle' + seriesNumber]['isVisible'] = false; 
             properties['properties']['SeriesType' + seriesNumber]['isVisible'] = false;  
             properties['properties']['ShowTooltip' + seriesNumber]['isVisible'] = false;  
             properties['properties']['TooltipStyle' + seriesNumber]['isVisible'] = false;
@@ -501,6 +511,7 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
             for (seriesNumber = 1; seriesNumber <= chart.MAX_SERIES; seriesNumber++) {
                 properties['properties']['XDataField' + seriesNumber]['sourcePropertyName'] = 'Data';
                 properties['properties']['YDataField' + seriesNumber]['sourcePropertyName'] = 'Data';
+                properties['properties']['SeriesDataStyle' + seriesNumber]['baseTypeInfotableProperty'] = 'Data';
                 properties['properties']['TooltipText' + seriesNumber]['sourcePropertyName'] = 'Data';
             }
             properties['properties']['Data']['isVisible'] = true;
@@ -509,6 +520,7 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
             for (seriesNumber = 1; seriesNumber <= chart.MAX_SERIES; seriesNumber++) {
                 properties['properties']['XDataField' + seriesNumber]['sourcePropertyName'] = 'DataSource' + seriesNumber;
                 properties['properties']['YDataField' + seriesNumber]['sourcePropertyName'] = 'DataSource' + seriesNumber;
+                properties['properties']['SeriesDataStyle' + seriesNumber]['baseTypeInfotableProperty'] = 'DataSource' + seriesNumber;
                 properties['properties']['TooltipText' + seriesNumber]['sourcePropertyName'] = 'DataSource' + seriesNumber;
             }
             properties['properties']['Data']['isVisible'] = false;
