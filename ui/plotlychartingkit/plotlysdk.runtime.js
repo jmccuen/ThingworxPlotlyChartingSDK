@@ -8,16 +8,16 @@
 */ 
 function TWRuntimeChart(widget) {
     let properties = widget.properties;
-    let chartId;
+    let id;
     let chart = this;
     
     //expose the layout and chart data so you can access them from within the source widget
     //This gives the user more control over the chart and allows overriding the sdk
     this.layout = new Object;
-    this.chartData = [];
-    this.chartInfo = {};
-    this.chartDiv;
-    this.plot;
+    this.data = [];
+    this.seriesMap = {};
+    this.info = {};
+    this.div;
 
     //this just lets the chart widget know if its already drawn the chart at least once
     //this is useful for streaming charts that might want to draw once and then extend after the first draw
@@ -25,11 +25,11 @@ function TWRuntimeChart(widget) {
 
     //This should be called in afterRender and it renders the chart onto the div with the appropriate layout settings
     this.render = function() {
-        chartId = widget.jqElementId;
+        id = widget.jqElementId;
 
-        chart.chartData = [];
+        chart.data = [];
         //need the actual div to add events
-        let chartDiv = document.getElementById(widget.jqElementId);
+        let div = document.getElementById(widget.jqElementId);
 
         chart.layout = {
 			showlegend: properties['ShowLegend'],
@@ -78,18 +78,18 @@ function TWRuntimeChart(widget) {
         };
         
         //draw the chart
-        Plotly.newPlot(chartDiv, chart.chartData, chart.layout, {displayModeBar: false});
+        Plotly.newPlot(id, chart.data, chart.layout, {displayModeBar: false});
 
         //Add our click event
         if (properties['AllowSelection']) {
-            chartDiv.on('plotly_click', chart.handleClick);
+            div.on('plotly_click', chart.handleClick);
         }
 
     }
 
     //extend takes in just new data and adds it to the trace. Need to pass in trace number here, right now this only works for index 0.
     this.extend = function(data) {
-        Plotly.extendTraces(chartId,data, [0]);
+        Plotly.extendTraces(id,data, [0]);
 
     }
 
@@ -98,18 +98,27 @@ function TWRuntimeChart(widget) {
             let update = {
                 title: info.SinglePropertyValue
             };
-            Plotly.relayout(chartId, update);
+            Plotly.relayout(id, update);
         };
 
         for (let i=1;i<=properties['NumberOfSeries'];i++) {
+            if (info.TargetProperty === 'XAxis' + i) {
+                let update = new Object();
+                update.xaxis = info.SinglePropertyValue;
+                chart.data[chart.seriesMap[i].index].xaxis = info.SinglePropertyValue;
+                Plotly.react(id,chart.data,chart.layout,{displayModeBar: false});
+            };
+
+            if (info.TargetProperty === 'YAxis' + i) {
+                let update = new Object();
+                update.yaxis = info.SinglePropertyValue;
+                Plottly.restyle(id, update, chart.seriesMap[i].index);
+            };
+
             if (info.TargetProperty === "SeriesLabel" + i) {
-                for (let j = 0; j<chart.chartData.length;j++) {
-                    if (i == chart.chartData[j].series) {
-                        let update = new Object();
-                        update.name = info.SinglePropertyValue;
-                        Plotly.restyle(chartId, update, j);
-                    };
-                };
+                let update = new Object();
+                update.name = info.SinglePropertyValue;
+                Plotly.restyle(id, update, chart.seriesMap[i].index);
             };
         };
 
@@ -121,19 +130,16 @@ function TWRuntimeChart(widget) {
                 } else {
                     update['xaxis' + i] = { title: info.SinglePropertyValue };
                 }
-                Plotly.relayout(chartId, update);
+                Plotly.relayout(id, update);
             };
         };
 
         for (let i=1;i<=properties['NumberOfYAxes'];i++) {
             if (info.TargetProperty === 'YAxisTitle' + i) {
                 let update = new Object();
-                if (i===1) {
-                    update['yaxis'] = { title: info.SinglePropertyValue };
-                } else {
-                    update['yaxis' + i] = { title: info.SinglePropertyValue };
-                }
-                 Plotly.relayout(chartId, update);
+                if (i===1) {  update['yaxis'] = { title: info.SinglePropertyValue } }
+                else { update['yaxis' + i] = { title: info.SinglePropertyValue } };
+                Plotly.relayout(id, update);
             };
         }
     };
@@ -180,21 +186,17 @@ function TWRuntimeChart(widget) {
                 trace.selected.marker.color = selectedStyle.backgroundColor;
             };
 
-            let exists = false;
-            for (let i = 0; i<chart.chartData.length;i++) {
-                if (trace.series === chart.chartData[i].series) {
-                    chart.chartData[i] = trace;
-                    exists = chart;
-                }
-            }
-            if (!exists) {
-                chart.chartData.push(trace);
-            }
-            
-        }
+            if (chart.seriesMap[trace.series]) {
+                chart.data[chart.seriesMap[trace.series].index] = trace;
+            } else {
+                chart.seriesMap[trace.series] = new Object();
+                chart.seriesMap[trace.series].index = i-1;
+                chart.data.push(trace);
+            };
+        };
 
-        chart.plot = Plotly.react(chartId,chart.chartData,chart.layout,{displayModeBar: false});
-    }
+        Plotly.react(id,chart.data,chart.layout,{displayModeBar: false});
+    };
 
     
     this.handleClick = function(data)
@@ -202,11 +204,11 @@ function TWRuntimeChart(widget) {
         for (let i=0;i<data.points.length;i++) {
             let point = data.points[i];
             let selected = [point.pointIndex];
-            for (let i=0;i<chart.chartData.length;i++) {
-                let item = chart.chartData[i];
+            for (let i=0;i<chart.data.length;i++) {
+                let item = chart.data[i];
                 if (point.data.dataSource === item.dataSource && point.data.series !== item.series) {
                     let update = {selectedpoints: [selected]};
-                    Plotly.restyle(chartId,update,i);
+                    Plotly.restyle(id,update,i);
                 }
             }
             widget.updateSelection(point.data.dataSource,selected);
@@ -217,11 +219,11 @@ function TWRuntimeChart(widget) {
     //This needs to handle the case where some other widget is being selected and we need to select our chart as well.
     widget.handleSelectionUpdate = function (propertyName, selectedRows, selectedRowIndices) {
         if (properties['AllowSelection']) {
-            for (let i=0;i<chart.chartData.length;i++) {
-                let data = chart.chartData[i];
+            for (let i=0;i<chart.data.length;i++) {
+                let data = chart.data[i];
                 if (data.dataSource === propertyName) {
                     let update = { selectedpoints: [selectedRowIndices]};
-                    Plotly.restyle(chartId,update,i);
+                    Plotly.restyle(id,update,i);
                 };
             };
         }
@@ -277,6 +279,11 @@ function TWRuntimeChart(widget) {
             };
         };
         
+        for (key in y) {
+            let hasValues = y[key].values.every(function(value) { return value });
+            if (!hasValues) { delete y[key] };
+        }
+
         values.x = x;
         values.y = y;
         
@@ -362,7 +369,7 @@ function TWRuntimeChart(widget) {
             height: height
         }
 
-        Plotly.relayout(chartId, update);
+        Plotly.relayout(id, update);
     };
 
     widget.runtimeProperties = function () {
@@ -373,7 +380,8 @@ function TWRuntimeChart(widget) {
     };
 
     widget.beforeDestroy = function () {
-       Plotly.purge(chartId);
+       Plotly.purge(id);
+       chart= undefined;
     };
 
 

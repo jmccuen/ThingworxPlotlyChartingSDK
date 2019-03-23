@@ -205,7 +205,8 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
                 'isVisible' : true,
                 'selectOptions': [
                     { value: 'x1', text: 'x1' }
-                ]
+                ],
+                'isBindingTarget': true
             };
 
             let dataYProperty = {
@@ -277,7 +278,6 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
             let seriesTooltipFormat = {
                 'description': '',
                 'baseType': 'STRING',
-                'isBindingTarget': true,
                 'isVisible': true,
                 'isLocalizable': true
             };
@@ -425,7 +425,7 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
             //based on the values created above, only for the number of axis the user has configured
             //we do the same thing for Y below. This is nice, because that way you dont need to configure
             //the axis settings for every series, like in the label chart
-            for (let seriesNumber = 1; seriesNumber <= this.MAX_SERIES;seriesNumber++) {
+            for (let seriesNumber = 1; seriesNumber <= chart.MAX_SERIES;seriesNumber++) {
                 properties['properties']['XAxis' + seriesNumber]['selectOptions'] = xValues;
             }
             return;
@@ -453,7 +453,7 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
             }
 
             
-            for (let seriesNumber = 1; seriesNumber <= this.MAX_SERIES;seriesNumber++) {
+            for (let seriesNumber = 1; seriesNumber <= chart.MAX_SERIES;seriesNumber++) {
                 properties['properties']['YAxis' + seriesNumber]['selectOptions'] = yValues;
             }
             return;
