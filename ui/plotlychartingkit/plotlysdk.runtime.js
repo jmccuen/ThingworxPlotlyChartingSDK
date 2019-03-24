@@ -234,7 +234,6 @@ function TWRuntimeChart(widget) {
 
     this.doubleClick = function(data) {
         widget.jqElement.triggerHandler('DoubleClicked');
-        e.preventDefault();
     }
 
     
