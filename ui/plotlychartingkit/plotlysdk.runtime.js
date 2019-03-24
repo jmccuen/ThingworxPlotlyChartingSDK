@@ -88,6 +88,8 @@ function TWRuntimeChart(widget) {
             div.on('plotly_click', chart.handleClick);
         }
 
+        div.on('plotly_doubleclick', chart.doubleClick);
+
     }
 
     //extend takes in just new data and adds it to the trace. Need to pass in trace number here, right now this only works for index 0.
@@ -229,6 +231,11 @@ function TWRuntimeChart(widget) {
             Plotly.react(id,chart.data,chart.layout,{displayModeBar: false});
         };
     };
+
+    this.doubleClick = function(data) {
+        widget.jqElement.triggerHandler('DoubleClicked');
+        e.preventDefault();
+    }
 
     
     this.handleClick = function(data)

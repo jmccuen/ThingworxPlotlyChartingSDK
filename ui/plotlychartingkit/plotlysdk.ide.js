@@ -289,7 +289,13 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
         }
 
         Plotly.relayout(widget.jqElementId, update);
-    }
+    };
+
+    widget.widgetEvents = function () {
+        return {
+        	'DoubleClicked': {}
+        };
+    };
 
     //This gets called when the widget is 'loaded', but apparently not on initial render. It makes sure when you go back into editing the mashup,
     //that all of the properties are visible that need to be for the axis and series.
