@@ -162,7 +162,7 @@ function TWRuntimeChart(widget) {
             }
             trace.line.color = style.lineColor;
             trace.fillcolor = style.backgroundColor;
-
+            
             switch(style.lineStyle) {
                 case 'dotted':
                     trace.line.dash = 'dot';
