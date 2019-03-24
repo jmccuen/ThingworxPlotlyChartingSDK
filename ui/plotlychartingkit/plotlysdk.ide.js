@@ -267,7 +267,7 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
             if (source) {
                 let dataSource = 'Data';
                 if (!singleSource) {
-                    dataSource = 'DataSource' + seriesNumber
+                    dataSource = 'DataSource' + key.slice(-1);
                 }
                 properties[key][source] = dataSource; 
             };
