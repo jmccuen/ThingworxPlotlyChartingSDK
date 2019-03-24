@@ -46,36 +46,18 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
             'warnIfNotBoundAsTarget': true
         };
 
-        properties.MarginTop = {
-            'description': 'Top Margin',
-            'baseType': 'NUMBER',
+        properties.Margin = {
+            'description': 'Top, Right, Bottom, Left',
+            'baseType': 'STRING',
             'isVisible': true,
-            'defaultValue': 100,
+            'defaultValue': '100, 80, 80, 80',
             'isBindingTarget': false
         };
 
-        properties.MarginBottom = {
-            'description': 'Bottom Margin',
-            'baseType': 'NUMBER',
-            'isVisible': true,
-            'defaultValue': 80,
-            'isBindingTarget': false
-        };
-
-        properties.MarginLeft = {
-            'description': 'Left Margin',
-            'baseType': 'NUMBER',
-            'isVisible': true,
-            'defaultValue': 80,
-            'isBindingTarget': false
-        };
-
-        properties.MarginRight = {
-            'description': 'Right Margin',
-            'baseType': 'NUMBER',
-            'isVisible': true,
-            'defaultValue': 80,
-            'isBindingTarget': false
+        properties.ShowAnimation =  {
+            'description': 'Show animation',
+            'baseType': 'BOOLEAN',
+            'defaultValue': false
         };
 
         properties.ShowTitle =  {
@@ -177,142 +159,10 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
             //TODO: Add something for Z for 3d charts. It should be similar
             properties = getAxisProperties(properties,'X');
             properties = getAxisProperties(properties,'Y');
+            properties = getSeriesProperties(properties);
 
         }
 
-        for (let seriesNumber = 1; seriesNumber <= chart.MAX_SERIES; seriesNumber++) {
-            let dataSourceProperty = {
-                'description': TW.IDE.I18NController.translate('tw.labelchart-ide.data-set-property.description') + seriesNumber,
-                'isBindingTarget': true,
-                'isEditable': false,
-                'baseType': 'INFOTABLE',
-                'warnIfNotBoundAsTarget': false,
-                'isVisible': true
-            };
-
-            let dataXProperty = {
-                'description': 'X Axis Field ' + seriesNumber,
-                'baseType': 'FIELDNAME',
-                'sourcePropertyName': 'Data',
-                'isBindingTarget': false,
-                'isVisible': true
-            };
-
-            let axisXProperty = {
-                'description': '',
-                'baseType': 'STRING',
-                'defaultValue': 'x1',
-                'isVisible' : true,
-                'selectOptions': [
-                    { value: 'x1', text: 'x1' }
-                ],
-                'isBindingTarget': true
-            };
-
-            let dataYProperty = {
-                'description': TW.IDE.I18NController.translate('tw.labelchart-ide.data-field-property.description') + seriesNumber,
-                'baseType': 'FIELDNAME',
-                'sourcePropertyName': 'Data',
-                'isBindingTarget': false,
-                'isVisible': true
-            };  
-            let axisYProperty = {
-                'description': '',
-                'baseType': 'STRING',
-                'defaultValue': 'x1',
-                'isVisible' : true,
-                'selectOptions': [
-                    { value: 'y1', text: 'y1' }
-                ]
-            };
-            
-            let dataZProperty = {
-                'description': 'Z Axis ' + seriesNumber,
-                'baseType': 'FIELDNAME',
-                'sourcePropertyName': 'Data',
-                'isBindingTarget': false,
-                'isVisible': true
-            };  
-
-            let dataLabelProperty = {
-                'description': TW.IDE.I18NController.translate('tw.labelchart-ide.data-label-property.description') + seriesNumber,
-                'baseType': 'STRING',
-                'isBindingTarget': true,
-                'isVisible': true,
-                'isLocalizable': true
-            };
-
-            let seriesType = {
-                'description': '',
-                'baseType': 'STRING',
-                'isVisible' : true,
-                'selectOptions': [
-                ]
-            };
-                
-            let seriesStyleProperty = {
-                'description': TW.IDE.I18NController.translate('tw.labelchart-ide.series-style-property.description') + seriesNumber,
-                'baseType': 'STYLEDEFINITION',
-                'isVisible': true
-            };
-
-            let seriesDataProperty = {
-                'description': TW.IDE.I18NController.translate('tw.labelchart-ide.series-state-property.description') + seriesNumber,
-                'baseType': 'STATEFORMATTING',
-                'baseTypeInfotableProperty': 'Data',
-                'isVisible': true
-            };
-
-            let seriesTooltipVisible = {
-                'description': '',
-                'baseType': 'BOOLEAN',
-                'defaultValue': true
-            };
-
-            let seriesTooltipStyle = {
-                'description': '',
-                'baseType': 'STYLEDEFINITION',
-                'isVisible': true
-            };
-
-            let seriesTooltipFormat = {
-                'description': '',
-                'baseType': 'STRING',
-                'isVisible': true,
-                'isLocalizable': true
-            };
-
-            let tooltipText = {
-                'description': '',
-                'baseType': 'FIELDNAME',
-                'sourcePropertyName': 'Data',
-                'isBindingTarget': false,
-                'isVisible': true
-            };
-
-            
-            if(multipleData) { properties['DataSource' + seriesNumber] = dataSourceProperty; };
-            if (type !== 'pie') { 
-                properties['XDataField' + seriesNumber] = dataXProperty;
-                properties['XAxis' + seriesNumber] = axisXProperty;
-                properties['YDataField' + seriesNumber] = dataYProperty;
-                properties['YAxis' + seriesNumber] = axisYProperty;
-                properties['SeriesType' + seriesNumber] = seriesType;
-                properties['SeriesLabel' + seriesNumber] = dataLabelProperty;
-                properties['SeriesStyle' + seriesNumber] = seriesStyleProperty;
-                properties['SeriesStyle' + seriesNumber]['defaultValue'] = 'DefaultChartStyle' + seriesNumber;
-                properties['SeriesDataStyle' + seriesNumber] = seriesDataProperty;
-                properties['ShowTooltip' + seriesNumber] = seriesTooltipVisible;
-                properties['TooltipStyle' + seriesNumber] = seriesTooltipStyle;
-                properties['TooltipStyle' + seriesNumber]['defaultValue'] = 'DefaultChartStyle' + seriesNumber;
-                properties['TooltipFormat' + seriesNumber] = seriesTooltipFormat;
-                properties['TooltipText' + seriesNumber] = tooltipText;
-                
-            };
-            if (type === '3d') { properties['ZDataField' + seriesNumber] = dataZProperty };
-        }
-
-        
         let result = {
             'category': ['Data', 'Charts'],
             'supportsLabel': false,
@@ -362,170 +212,73 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
     }
 
     //show or hide axis properties based on other settings
-    //its kind of dumb that allWidgetProperties doesn't have the values;
     this.setAxesProperties = function (name,value) {
-        let properties = widget.allWidgetProperties();
-
-        if (name === 'XAxesVisible') {
-            properties['properties']['XAxesAuto']['isVisible'] = value;
-            properties['properties']['XAxesTicks']['isVisible'] = value;
-            properties['properties']['XAxesTickMax']['isVisible'] = value;
-            properties['properties']['XAxesTickWidth']['isVisible'] = value;
-            properties['properties']['XAxesTickStyle']['isVisible'] = value;
-            properties['properties']['XAxesTickAngle']['isVisible'] = value;
-            properties['properties']['XAxesShowGrid']['isVisible'] = value;
-            properties['properties']['XAxesGridStyle']['isVisible'] = value;
-            properties['properties']['XAxesShowLine']['isVisible'] = value;
-            properties['properties']['XAxesLineStyle']['isVisible'] = value;
-
-            let axes = widget.getProperty('NumberOfXAxes');
-            chart.setAxesProperties('NumberOfXAxes',axes);
-
-            return;
+        let properties = widget.allWidgetProperties().properties;
+        
+        for (key in properties) {
+            let property = properties[key];
+            if (property.axis) {
+                let visible = widget.getProperty(property.axis + 'AxesVisible');
+                property['isVisible'] = visible;
+                let numberOfAxes = widget.getProperty('NumberOf' + property.axis + 'Axes');
+                if (property['axisNumber'] && property['axisNumber'] > numberOfAxes) {
+                    property['isVisible'] = false;
+                };
+            };
+        };
+        
+        let xAxes = widget.getProperty('NumberOfXAxes');
+        let xValues = [];
+        for (let i = 1; i<= xAxes;i++) {
+            xValues.push({ value: 'x' + i, text: 'x' + i });
         }
 
-        if (name === 'YAxesVisible') {
-            properties['properties']['YAxesAuto']['isVisible'] = value;
-            properties['properties']['YAxesTicks']['isVisible'] = value;
-            properties['properties']['YAxesTickMax']['isVisible'] = value;
-            properties['properties']['YAxesTickWidth']['isVisible'] = value;
-            properties['properties']['YAxesTickStyle']['isVisible'] = value;
-            properties['properties']['YAxesTickAngle']['isVisible'] = value;
-            properties['properties']['YAxesShowGrid']['isVisible'] = value;
-            properties['properties']['YAxesGridStyle']['isVisible'] = value;
-            properties['properties']['YAxesShowLine']['isVisible'] = value;
-            properties['properties']['YAxesLineStyle']['isVisible'] = value;
-
-            let axes = widget.getProperty('NumberOfYAxes');
-            chart.setAxesProperties('NumberOfYAxes',axes);
-            return;
+        let yAxes = widget.getProperty('NumberOfYAxes');
+        let yValues = [];
+        for (let i = 1; i<= yAxes;i++) {
+            yValues.push({ value: 'y' + i, text: 'y' + i });
         }
 
-        if (name === 'NumberOfXAxes') {
-            let xVis = widget.getProperty('XAxesVisible');
-            let xValues = [];
-            for (let axis = 1; axis <= value; axis++) {
-                properties['properties']['XAxisStyle' + axis]['isVisible'] = xVis;
-                properties['properties']['XAxisTitle' + axis]['isVisible'] = xVis;
-                properties['properties']['XAxisType' + axis]['isVisible'] = xVis;
-                properties['properties']['XAxisTickFormat' + axis]['isVisible'] = xVis;
-                if (axis>1) { properties['properties']['XAxisPosition' + axis]['isVisible'] = xVis };
-                xValues.push({ value: 'x' + axis, text: 'x' + axis });
-            }
-
-            for (let axis = value + 1; axis <= chart.MAX_AXES; axis++) {
-                properties['properties']['XAxisStyle' + axis]['isVisible'] = false;
-                properties['properties']['XAxisTitle' + axis]['isVisible'] = false;
-                properties['properties']['XAxisType' + axis]['isVisible'] = false;
-                properties['properties']['XAxisTickFormat' + axis]['isVisible'] = false;
-                properties['properties']['XAxisPosition' + axis]['isVisible'] = false;
-            }
-
-            //This is really clever. It sets up the drop down for which x axis to use 
-            //based on the values created above, only for the number of axis the user has configured
-            //we do the same thing for Y below. This is nice, because that way you dont need to configure
-            //the axis settings for every series, like in the label chart
-            for (let seriesNumber = 1; seriesNumber <= chart.MAX_SERIES;seriesNumber++) {
-                properties['properties']['XAxis' + seriesNumber]['selectOptions'] = xValues;
-            }
-            return;
+        for (let i = 1; i<= chart.MAX_SERIES;i++) {
+            properties['XAxis' + i]['selectOptions'] = xValues;
+            properties['YAxis' + i]['selectOptions'] = yValues;
         }
-
-        if (name === 'NumberOfYAxes') {
-            let yVis = widget.getProperty('YAxesVisible');
-            let yValues = [];
-            for (let axis = 1; axis <= value; axis++) {
-
-                properties['properties']['YAxisStyle' + axis]['isVisible'] = yVis;
-                properties['properties']['YAxisTitle' + axis]['isVisible'] = yVis;
-                properties['properties']['YAxisType' + axis]['isVisible'] = yVis;
-                properties['properties']['YAxisTickFormat' + axis]['isVisible'] = yVis;
-                if (axis>1) { properties['properties']['YAxisPosition' + axis]['isVisible'] = yVis };
-                yValues.push({ value: 'y' + axis, text: 'y' + axis });
-            }
-
-            for (let axis = value + 1; axis <= chart.MAX_AXES; axis++) {
-                properties['properties']['YAxisStyle' + axis]['isVisible'] = false;
-                properties['properties']['YAxisTitle' + axis]['isVisible'] = false;
-                properties['properties']['YAxisType' + axis]['isVisible'] = false;
-                properties['properties']['YAxisTickFormat' + axis]['isVisible'] = false;
-                properties['properties']['YAxisPosition' + axis]['isVisible'] = false;
-            }
-
-            
-            for (let seriesNumber = 1; seriesNumber <= chart.MAX_SERIES;seriesNumber++) {
-                properties['properties']['YAxis' + seriesNumber]['selectOptions'] = yValues;
-            }
-            return;
-        }
-
         
     }
 
     //Same thing as above, but for series instead of axes.
     this.setSeriesProperties = function (value) {
-        let properties = widget.allWidgetProperties();
-        let seriesNumber;
+        let properties = widget.allWidgetProperties().properties;
         let singleSource = true; 
-        let showTooltip = widget.getProperty('ShowTooltip');
         if (multipleData) { singleSource = widget.getProperty('SingleDataSource') };
-        for (seriesNumber = 1; seriesNumber <= value; seriesNumber++) {
-            properties['properties']['XDataField' + seriesNumber]['isVisible'] = !singleSource
-            properties['properties']['XAxis' + seriesNumber]['isVisible'] = true;
-            properties['properties']['YDataField' + seriesNumber]['isVisible'] = true;
-            properties['properties']['YAxis' + seriesNumber]['isVisible'] = true;
-            properties['properties']['SeriesLabel' + seriesNumber]['isVisible'] = true;
-            properties['properties']['SeriesStyle' + seriesNumber]['isVisible'] = true;  
-            properties['properties']['SeriesDataStyle' + seriesNumber]['isVisible'] = true; 
-            properties['properties']['SeriesType' + seriesNumber]['isVisible'] = true;  
-            properties['properties']['ShowTooltip' + seriesNumber]['isVisible'] = true;  
-            properties['properties']['TooltipStyle' + seriesNumber]['isVisible'] = true;
-            properties['properties']['TooltipFormat' + seriesNumber]['isVisible'] = true;    
-            properties['properties']['TooltipText' + seriesNumber]['isVisible'] = true; 
-            //this property doesnt exist if there isn't multiple data sources, so you cant set the isVisible of undefined
-            if (multipleData) {
-                properties['properties']['DataSource' + seriesNumber]['isVisible'] = !singleSource
-            }
-        }
 
-        for (seriesNumber = value + 1; seriesNumber <= chart.MAX_SERIES; seriesNumber++) {
-            properties['properties']['XDataField' + seriesNumber]['isVisible'] = false;
-            properties['properties']['XAxis' + seriesNumber]['isVisible'] = false;
-            properties['properties']['YDataField' + seriesNumber]['isVisible'] = false;
-            properties['properties']['YAxis' + seriesNumber]['isVisible']= false;
-            properties['properties']['SeriesLabel' + seriesNumber]['isVisible'] = false;
-            properties['properties']['SeriesStyle' + seriesNumber]['isVisible'] = false;
-            properties['properties']['SeriesDataStyle' + seriesNumber]['isVisible'] = false; 
-            properties['properties']['SeriesType' + seriesNumber]['isVisible'] = false;  
-            properties['properties']['ShowTooltip' + seriesNumber]['isVisible'] = false;  
-            properties['properties']['TooltipStyle' + seriesNumber]['isVisible'] = false;
-            properties['properties']['TooltipFormat' + seriesNumber]['isVisible'] = false; 
-            properties['properties']['TooltipText' + seriesNumber]['isVisible'] = false; 
-            if (multipleData) {
-                properties['properties']['DataSource' + seriesNumber]['isVisible'] = false;
+        for (key in properties) {
+            let property = properties[key];
+            if (property.series && property.series <= value) {
+                if (properties[key]['isMulti']) {
+                    properties[key]['isVisible'] = !singleSource;
+                } else {
+                    properties[key]['isVisible'] = true;
+                };
+            } else if(property.series) {
+                properties[key]['isVisible'] = false;
             }
-        }
-
-        //This changes the source property data field when there are multiple sources.
+            let source = properties[key]['source'];
+            if (source) {
+                let dataSource = 'Data';
+                if (!singleSource) {
+                    dataSource = 'DataSource' + seriesNumber
+                }
+                properties[key][source] = dataSource; 
+            };
+        };
         if (singleSource) {
-            for (seriesNumber = 1; seriesNumber <= chart.MAX_SERIES; seriesNumber++) {
-                properties['properties']['XDataField' + seriesNumber]['sourcePropertyName'] = 'Data';
-                properties['properties']['YDataField' + seriesNumber]['sourcePropertyName'] = 'Data';
-                properties['properties']['SeriesDataStyle' + seriesNumber]['baseTypeInfotableProperty'] = 'Data';
-                properties['properties']['TooltipText' + seriesNumber]['sourcePropertyName'] = 'Data';
-            }
-            properties['properties']['Data']['isVisible'] = true;
-            properties['properties']['XAxisField']['isVisible'] = true;
+            properties['Data']['isVisible'] = true;
+            properties['XAxisField']['isVisible'] = true;
         } else {
-            for (seriesNumber = 1; seriesNumber <= chart.MAX_SERIES; seriesNumber++) {
-                properties['properties']['XDataField' + seriesNumber]['sourcePropertyName'] = 'DataSource' + seriesNumber;
-                properties['properties']['YDataField' + seriesNumber]['sourcePropertyName'] = 'DataSource' + seriesNumber;
-                properties['properties']['SeriesDataStyle' + seriesNumber]['baseTypeInfotableProperty'] = 'DataSource' + seriesNumber;
-                properties['properties']['TooltipText' + seriesNumber]['sourcePropertyName'] = 'DataSource' + seriesNumber;
-            }
-            properties['properties']['Data']['isVisible'] = false;
-            properties['properties']['XAxisField']['isVisible'] = false;
-        }
+            properties['Data']['isVisible'] = false;
+            properties['XAxisField']['isVisible'] = false;
+        };
     }
 
     //I dont think this actually works in the IDE. Need to test.
@@ -540,7 +293,7 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
 
     //This gets called when the widget is 'loaded', but apparently not on initial render. It makes sure when you go back into editing the mashup,
     //that all of the properties are visible that need to be for the axis and series.
-    widget.afterLoad = function() {
+    this.afterLoad = function() {
         if (type !== 'pie') {
             chart.setSeriesProperties(widget.getProperty('NumberOfSeries'));
             chart.setAxesProperties('NumberOfXAxes', widget.getProperty('NumberOfXAxes'));
@@ -549,9 +302,8 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
     };
 
     //If you change some of these properties, other properties become available.
-    widget.afterSetProperty = function (name, value) {
-        let properties = widget.allWidgetProperties();
-
+    this.afterSetProperty = function (name, value) {
+        let properties = widget.allWidgetProperties().properties;
         if (name === 'NumberOfSeries' || name === 'SingleDataSource') {
             chart.setSeriesProperties(widget.getProperty('NumberOfSeries'));
             widget.updatedProperties();
@@ -563,10 +315,20 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
             widget.updatedProperties();
             return true;
         };
+
+        if (name.includes('SeriesMode')) {
+            let series = name.slice(-1);
+            if (value === 'spline') {
+                properties['SeriesSmoothing' + series]['isVisible'] = true;
+            } else {
+                properties['SeriesSmoothing' + series]['isVisible'] = false;
+            }
+            widget.updatedProperties();
+        };
     };
 
     //validate property values before setting them. Still need to add a bunch of these for the number properties that go from 0-1;
-    widget.beforeSetProperty = function (name, value) {
+    this.beforeSetProperty = function (name, value) {
         if (name === 'NumberOfSeries') {
             value = parseInt(value, 10);
             if (value < 0 || value > chart.MAX_SERIES)
@@ -586,14 +348,16 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
             'description': '',
             'baseType': 'BOOLEAN',
             'isVisible': true,
-            'defaultValue': true
+            'defaultValue': true,
+            'axis': axis
         };
 
         properties[axis + "AxesAuto"] =  {
             'description': '',
             'baseType': 'BOOLEAN',
             'isVisible': true,
-            'defaultValue': true
+            'defaultValue': true,
+            'axis': axis
         };
 
        
@@ -606,7 +370,8 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
                 { value: 'auto', text: 'Auto' },
                 { value: 'linear', text: 'Linear' },
                 { value: 'array', text: 'InfoTable' }
-            ]
+            ],
+            'axis': axis
         };
        
         properties[axis + "AxesTickMax"] = {
@@ -614,7 +379,8 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
             'baseType': 'NUMBER',
             'isVisible': true,
             'defaultValue': 0,
-            'isBindingTarget': false
+            'isBindingTarget': false,
+            'axis': axis
         };
 
         properties[axis + "AxesTickWidth"] = {
@@ -622,14 +388,16 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
             'baseType': 'NUMBER',
             'isVisible': true,
             'defaultValue': 0,
-            'isBindingTarget': false
+            'isBindingTarget': false,
+            'axis': axis
         };
         
         properties[axis + "AxesTickStyle"] = {
             'description': '',
             'baseType': 'STYLEDEFINITION',
             'isVisible': true,
-            'defaultValue': 'DefaultChartTitleStyle'
+            'defaultValue': 'DefaultChartTitleStyle',
+            'axis': axis
         };
        
         properties[axis + "AxesTickAngle"] = {
@@ -637,21 +405,24 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
             'baseType': 'STRING',
             'isVisible': true,
             'defaultValue': 'auto',
-            'isBindingTarget': false
+            'isBindingTarget': false,
+            'axis': axis
         };
        
         properties[axis + "AxesShowGrid"] =  {
             'description': '',
             'baseType': 'BOOLEAN',
             'isVisible': true,
-            'defaultValue': true
+            'defaultValue': true,
+            'axis': axis
         };
        
         properties[axis + "AxesGridStyle"] = {
             'description': '',
             'baseType': 'STYLEDEFINITION',
             'isVisible': true,
-            'defaultValue': 'DefaultChartTitleStyle'
+            'defaultValue': 'DefaultChartTitleStyle',
+            'axis': axis
         };
 
         
@@ -659,14 +430,16 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
             'description': '',
             'baseType': 'BOOLEAN',
             'isVisible': true,
-            'defaultValue': true
+            'defaultValue': true,
+            'axis': axis
         };
 
         properties[axis + "AxesLineStyle"] = {
             'description': '',
             'baseType': 'STYLEDEFINITION',
             'isVisible': true,
-            'defaultValue': 'DefaultChartTitleStyle'
+            'defaultValue': 'DefaultChartTitleStyle',
+            'axis': axis
         };
 
         for (let i = 1; i <= chart.MAX_AXES; i++) {
@@ -675,14 +448,18 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
                 'description': '',
                 'baseType': 'STYLEDEFINITION',
                 'isVisible': true,
-                'defaultValue': 'DefaultChartTitleStyle'
+                'defaultValue': 'DefaultChartTitleStyle',
+                'axis': axis,
+                'axisNumber': i
             };
 
             let axisTitle = {
                 'description': '',
                 'baseType': 'STRING',
                 'isVisible': true,
-                'isBindingTarget': true
+                'isBindingTarget': true,
+                'axis': axis,
+                'axisNumber': i
             };
 
             let axisType = {
@@ -697,14 +474,18 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
                     { value: 'date', text: 'Date' },
                     { value: 'category', text: 'Category' },
                     { value: 'multicategory', text: 'Multicategory' },
-                ]
+                ],
+                'axis': axis,
+                'axisNumber': i
             };
 
             let axisTickFormat = {
                 'description': '',
                 'baseType': 'STRING',
                 'isVisible': true,
-                'isBindingTarget': false
+                'isBindingTarget': false,
+                'axis': axis,
+                'axisNumber': i
             };
 
             let axisSide;
@@ -717,7 +498,9 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
                     'selectOptions': [
                         { value: 'top', text: 'Top' },
                         { value: 'bottom', text: 'Bottom' }
-                    ]
+                    ],
+                    'axis': axis,
+                    'axisNumber': i
                 };
             } else {
                 axisSide = {
@@ -728,7 +511,9 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
                     'selectOptions': [
                         { value: 'right', text: 'Right' },
                         { value: 'left', text: 'Left' }
-                    ]
+                    ],
+                    'axis': axis,
+                    'axisNumber': i
                 };
             };
 
@@ -739,7 +524,9 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
                 'defaultValue': 'free',
                 'selectOptions': [
                     { value: 'free', text: 'Free' }
-                ]
+                ],
+                'axis': axis,
+                'axisNumber': i
             };
 
             let axisPosition = {
@@ -747,7 +534,9 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
                 'baseType': 'NUMBER',
                 'isVisible': true,
                 'defaultValue': 0,
-                'isBindingTarget': false
+                'isBindingTarget': false,
+                'axis': axis,
+                'axisNumber': i
             };
             
             //        anchor='free', overlaying='y',side='left',position=0.15
@@ -760,6 +549,178 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
             }
 
         };
+        return properties;
+    }
+
+    function getSeriesProperties(properties) {
+        for (let seriesNumber = 1; seriesNumber <= chart.MAX_SERIES; seriesNumber++) {
+            let dataSourceProperty = {
+                'description': TW.IDE.I18NController.translate('tw.labelchart-ide.data-set-property.description') + seriesNumber,
+                'isBindingTarget': true,
+                'isEditable': false,
+                'baseType': 'INFOTABLE',
+                'warnIfNotBoundAsTarget': false,
+                'isVisible': true,
+                'series': seriesNumber,
+                'isMulti': true
+            };
+
+            let dataXProperty = {
+                'description': 'X Axis Field ' + seriesNumber,
+                'baseType': 'FIELDNAME',
+                'sourcePropertyName': 'Data',
+                'isBindingTarget': false,
+                'isVisible': true,
+                'series': seriesNumber,
+                'isMulti': true,
+                'source': 'sourcePropertyName'
+            };
+
+            let axisXProperty = {
+                'description': '',
+                'baseType': 'STRING',
+                'defaultValue': 'x1',
+                'isVisible' : true,
+                'selectOptions': [
+                    { value: 'x1', text: 'x1' }
+                ],
+                'isBindingTarget': true,
+                'series': seriesNumber,
+            };
+
+            let dataYProperty = {
+                'description': TW.IDE.I18NController.translate('tw.labelchart-ide.data-field-property.description') + seriesNumber,
+                'baseType': 'FIELDNAME',
+                'sourcePropertyName': 'Data',
+                'isBindingTarget': false,
+                'isVisible': true,
+                'series': seriesNumber,
+                'source': 'sourcePropertyName'
+            };  
+            let axisYProperty = {
+                'description': '',
+                'baseType': 'STRING',
+                'defaultValue': 'x1',
+                'isVisible' : true,
+                'selectOptions': [
+                    { value: 'y1', text: 'y1' }
+                ],
+                'series': seriesNumber
+            };
+            
+            let dataZProperty = {
+                'description': 'Z Axis ' + seriesNumber,
+                'baseType': 'FIELDNAME',
+                'sourcePropertyName': 'Data',
+                'isBindingTarget': false,
+                'isVisible': true,
+                'series': seriesNumber,
+                'source': 'sourcePropertyName'
+            };  
+
+            let dataLabelProperty = {
+                'description': TW.IDE.I18NController.translate('tw.labelchart-ide.data-label-property.description') + seriesNumber,
+                'baseType': 'STRING',
+                'isBindingTarget': true,
+                'isVisible': true,
+                'isLocalizable': true,
+                'series': seriesNumber
+            };
+
+            let seriesType = {
+                'description': '',
+                'baseType': 'STRING',
+                'isVisible' : false,
+                'selectOptions': [
+                ],
+                'series': seriesNumber
+            };
+
+            let seriesMode = {
+                'description': '',
+                'baseType': 'STRING',
+                'isVisible' : false,
+                'selectOptions': [
+                ],
+                'series': seriesNumber
+            };
+
+            let seriesSmoothing = {
+                'description': '',
+                'baseType': 'NUMBER',
+                'isVisible' : false,
+                'defaultValue': 1,
+                'series': seriesNumber
+            };
+                
+            let seriesStyleProperty = {
+                'description': TW.IDE.I18NController.translate('tw.labelchart-ide.series-style-property.description') + seriesNumber,
+                'baseType': 'STYLEDEFINITION',
+                'isVisible': true,
+                'series': seriesNumber
+            };
+
+            let seriesDataProperty = {
+                'description': TW.IDE.I18NController.translate('tw.labelchart-ide.series-state-property.description') + seriesNumber,
+                'baseType': 'STATEFORMATTING',
+                'baseTypeInfotableProperty': 'Data',
+                'isVisible': true,
+                'series': seriesNumber,
+                'source': 'baseTypeInfotableProperty'
+            };
+
+            let seriesTooltipVisible = {
+                'description': '',
+                'baseType': 'BOOLEAN',
+                'defaultValue': true,
+                'series': seriesNumber
+            };
+
+            let seriesTooltipStyle = {
+                'description': '',
+                'baseType': 'STYLEDEFINITION',
+                'isVisible': true,
+                'series': seriesNumber
+            };
+
+            let seriesTooltipFormat = {
+                'description': '',
+                'baseType': 'STRING',
+                'isVisible': true,
+                'isLocalizable': true,
+                'series': seriesNumber
+            };
+
+            let tooltipText = {
+                'description': '',
+                'baseType': 'FIELDNAME',
+                'sourcePropertyName': 'Data',
+                'isBindingTarget': false,
+                'isVisible': true,
+                'series': seriesNumber
+            };
+
+            
+            if(multipleData) { properties['DataSource' + seriesNumber] = dataSourceProperty; };
+            properties['XDataField' + seriesNumber] = dataXProperty;
+            properties['XAxis' + seriesNumber] = axisXProperty;
+            properties['YDataField' + seriesNumber] = dataYProperty;
+            properties['YAxis' + seriesNumber] = axisYProperty;
+            properties['SeriesType' + seriesNumber] = seriesType;
+            properties['SeriesMode' + seriesNumber] = seriesMode;
+            properties['SeriesSmoothing' + seriesNumber] = seriesSmoothing;
+            properties['SeriesLabel' + seriesNumber] = dataLabelProperty;
+            properties['SeriesStyle' + seriesNumber] = seriesStyleProperty;
+            properties['SeriesStyle' + seriesNumber]['defaultValue'] = 'DefaultChartStyle' + seriesNumber;
+            properties['SeriesDataStyle' + seriesNumber] = seriesDataProperty;
+            properties['ShowTooltip' + seriesNumber] = seriesTooltipVisible;
+            properties['TooltipStyle' + seriesNumber] = seriesTooltipStyle;
+            properties['TooltipStyle' + seriesNumber]['defaultValue'] = 'DefaultChartStyle' + seriesNumber;
+            properties['TooltipFormat' + seriesNumber] = seriesTooltipFormat;
+            properties['TooltipText' + seriesNumber] = tooltipText;
+                
+            if (type === '3d') { properties['ZDataField' + seriesNumber] = dataZProperty };
+        }
         return properties;
     }
 }

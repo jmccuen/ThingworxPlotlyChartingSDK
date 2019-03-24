@@ -53,12 +53,15 @@ function TWRuntimeChart(widget) {
             title.y = properties['ChartTitleY'];
             chart.layout.title = title;
         }
+        
+        let margins = properties['Margin'].split(",");
 
         let margin = new Object();
-        margin.t = properties['MarginTop'];
-        margin.b = properties['MarginBottom'];
-        margin.l = properties['MarginLeft'];
-        margin.r = properties['MarginRight'];
+        margin.t = Number(margins[0].trim());
+        margin.r = Number(margins[1].trim());
+        margin.b = Number(margins[2].trim());
+        margin.l = Number(margins[3].trim());
+       
 
         chart.layout.margin = margin;
 
@@ -158,7 +161,18 @@ function TWRuntimeChart(widget) {
                 trace.line = new Object();
             }
             trace.line.color = style.lineColor;
-            trace.line.dash = style.lineStyle;
+            trace.fillcolor = style.backgroundColor;
+
+            switch(style.lineStyle) {
+                case 'dotted':
+                    trace.line.dash = 'dot';
+                    break;
+                case 'dashed': 
+                    trace.line.dash = 'dash';
+                    break;
+                default:   
+                    trace.line.dash = 'solid';
+            };
             trace.name = properties['SeriesLabel' + series];
             trace.hoverinfo = 'none';
             if (properties['ShowTooltip' + series]) {
@@ -189,13 +203,32 @@ function TWRuntimeChart(widget) {
             if (chart.seriesMap[trace.series]) {
                 chart.data[chart.seriesMap[trace.series].index] = trace;
             } else {
-                chart.seriesMap[trace.series] = new Object();
-                chart.seriesMap[trace.series].index = i-1;
+                let index = chart.data.length;
                 chart.data.push(trace);
+                chart.seriesMap[trace.series] = new Object();
+                chart.seriesMap[trace.series].index = index;
             };
         };
 
-        Plotly.react(id,chart.data,chart.layout,{displayModeBar: false});
+        if (properties['ShowAnimation'] && chart.plotted) {
+            Plotly.animate(id,
+                {
+                    'data': chart.data, 
+                    'layout': chart.layout
+                },
+                {
+                    transition: {
+                        duration: 500,
+                        easing: 'cubic-in-out'
+                    },
+                    frame: {
+                        duration: 500
+                    }
+                }
+            );
+        } else {
+            Plotly.react(id,chart.data,chart.layout,{displayModeBar: false});
+        };
     };
 
     
@@ -204,6 +237,9 @@ function TWRuntimeChart(widget) {
         for (let i=0;i<data.points.length;i++) {
             let point = data.points[i];
             let selected = [point.pointIndex];
+            if (!point.pointIndex) {
+                selected = [point.i];
+            }
             for (let i=0;i<chart.data.length;i++) {
                 let item = chart.data[i];
                 if (point.data.dataSource === item.dataSource && point.data.series !== item.series) {
