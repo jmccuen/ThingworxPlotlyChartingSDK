@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?><Entities>
   <ExtensionPackages>
-    <ExtensionPackage dependsOn="" description="" minimumThingWorxVersion="6.0.0" name="PlotlyChartingKit" packageVersion="1.0.140" vendor="Thingworx Labs"/>
+    <ExtensionPackage dependsOn="" description="" minimumThingWorxVersion="6.0.0" name="PlotlyChartingKit" packageVersion="1.0.141" vendor="Thingworx Labs"/>
   </ExtensionPackages>
   <Widgets>
     <Widget name="plotlychartingkit">

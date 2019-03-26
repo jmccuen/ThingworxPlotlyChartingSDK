@@ -703,7 +703,8 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
                 'sourcePropertyName': 'Data',
                 'isBindingTarget': false,
                 'isVisible': true,
-                'series': seriesNumber
+                'series': seriesNumber,
+                'source': 'sourcePropertyName'
             };
 
             
