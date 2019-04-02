@@ -54,7 +54,7 @@ function TWRuntimeChart(widget) {
             chart.layout.title = title;
         }
         
-        let margins = properties['Margin'].split(",");
+        let margins = properties['ChartMargin'].split(",");
 
         let margin = new Object();
         margin.t = Number(margins[0].trim());

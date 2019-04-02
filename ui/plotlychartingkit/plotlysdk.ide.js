@@ -46,7 +46,7 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
             'warnIfNotBoundAsTarget': true
         };
 
-        properties.Margin = {
+        properties.ChartMargin = {
             'description': 'Top, Right, Bottom, Left',
             'baseType': 'STRING',
             'isVisible': true,
