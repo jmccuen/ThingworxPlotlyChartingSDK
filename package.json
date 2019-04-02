@@ -1,0 +1,21 @@
+{
+  "name": "plotlychartlibrary",
+  "version": "1.0.0",
+  "description": "This SDK is a work in process. Please open an issue as you encounter them and let me know if you have any feedback. Not all features are implemented at this time and bugs may be common for the time being.",
+  "main": "index.js",
+  "dependencies": {},
+  "devDependencies": {
+    "eslint": "^5.16.0",
+    "eslint-config-airbnb-base": "^13.1.0",
+    "eslint-plugin-import": "^2.16.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "http://roicentersvn.ptcnet.ptc.com/jmccuen/ChartWidgetLibrary.git"
+  },
+  "author": "",
+  "license": "ISC"
+}

@@ -46,6 +46,27 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
             'warnIfNotBoundAsTarget': true
         };
 
+        properties.ChartImage = {
+            'description': '',
+            'baseType': 'IMAGE',
+            'isBindingSource': true,
+            'defaultValue': ''
+        };
+
+        properties.ImageWidth = {
+            'description': '',
+            'baseType': 'INTEGER',
+            'isBindingSource': true,
+            'defaultValue': 400
+        };
+
+        properties.ImageHeight = {
+            'description': '',
+            'baseType': 'INTEGER',
+            'isBindingSource': true,
+            'defaultValue': 400
+        };
+
         properties.ChartMargin = {
             'description': 'Top, Right, Bottom, Left',
             'baseType': 'STRING',
@@ -106,6 +127,22 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
             'description': TW.IDE.I18NController.translate('tw.labelchart-ide.properties.show-legend.description'),
             'baseType': 'BOOLEAN',
             'defaultValue': true
+        };
+
+        properties.LegendOrientation = {
+            'description': '',
+            'baseType': 'STRING',
+            'defaultValue': 'h',
+            'selectOptions': [
+                {'value': 'h', 'text': 'Horizontal'},
+                {'value': 'v', 'text': 'Vertical'}
+            ]
+        };
+
+        properties.LegendStyle = {
+            'description': '',
+            'baseType': 'STYLEDEFINITION',
+            'defaultValue': 'DefaultChartTitleStyle'
         };
 
         properties.AllowSelection =  {
@@ -345,6 +382,12 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
             if (value < 0 || value > chart.MAX_AXES)
                 return 'Error - Max number of axes is ' + chart.MAX_AXES
         }
+    };
+
+    this.widgetServices = function () {
+        /*return {
+            'ToImage': { 'warnIfNotBound': false }
+        };*/
     };
 
     //Gets the X and Y properties. The axis settings can all be per axis, but some other them I decided to be shared across all axes

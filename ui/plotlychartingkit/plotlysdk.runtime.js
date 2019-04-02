@@ -33,7 +33,6 @@ function TWRuntimeChart(widget) {
 
         chart.layout = {
 			showlegend: properties['ShowLegend'],
-			legend: {'orientation': 'h'},
 			font: {
 				color: 'black',
 				size: 11
@@ -53,7 +52,20 @@ function TWRuntimeChart(widget) {
             title.y = properties['ChartTitleY'];
             chart.layout.title = title;
         }
-        
+
+        if (properties['ShowLegend']) {
+            let legendStyle = TW.getStyleFromStyleDefinition(properties['LegendStyle'],'DefaultChartTitleStyle');
+            let legend = new Object();
+            legend.orientation = properties['LegendOrientation'];
+            legend.bgcolor = legendStyle.backgroundColor;
+            legend.font = new Object();
+            legend.font.size = Number(getFontSize(legendStyle.textSize));
+            legend.font.color = legendStyle.foregroundColor;
+            legend.bordercolor = legendStyle.lineColor;
+            legend.borderwidth = legendStyle.lineThickness;
+            chart.layout.legend = legend;
+        };
+
         let margins = properties['ChartMargin'].split(",");
 
         let margin = new Object();
@@ -66,8 +78,13 @@ function TWRuntimeChart(widget) {
         chart.layout.margin = margin;
 
         //Set up the axes. Axis 1 is a bit different from the others, because there is no trailing number for them
-        chart.layout.xaxis = getAxisObject('X',1);
-        chart.layout.yaxis = getAxisObject('Y',1);
+        if (properties['NumberOfXAxes']) {
+            chart.layout.xaxis = getAxisObject('X',1);
+        };
+
+        if (properties['NumberOfYAxes']) {
+            chart.layout.yaxis = getAxisObject('Y',1);
+        };
 
         for (let i = 2; i <= properties['NumberOfXAxes'];i++) {
             chart.layout['xaxis' + i] = getAxisObject('X',i);
@@ -81,7 +98,7 @@ function TWRuntimeChart(widget) {
         };
         
         //draw the chart
-        Plotly.newPlot(id, chart.data, chart.layout, {displayModeBar: false});
+        Plotly.newPlot(id, chart.data, chart.layout, {displayModeBar: false}).then(chart.createImage());
 
         //Add our click event
         if (properties['AllowSelection']) {
@@ -103,24 +120,24 @@ function TWRuntimeChart(widget) {
             let update = {
                 title: info.SinglePropertyValue
             };
-            Plotly.relayout(id, update);
+            Plotly.relayout(id, update).then(chart.createImage());
         };
 
         for (let i=1;i<=properties['NumberOfSeries'];i++) {
             if (info.TargetProperty === 'XAxis' + i) {
                 chart.data[chart.seriesMap[i].index].xaxis = info.SinglePropertyValue;
-                Plotly.react(id,chart.data,chart.layout,{displayModeBar: false});
+                Plotly.react(id,chart.data,chart.layout,{displayModeBar: false}).then(chart.createImage());
             };
 
             if (info.TargetProperty === 'YAxis' + i) {
                 chart.data[chart.seriesMap[i].index].yaxis = info.SinglePropertyValue;
-                Plotly.react(id,chart.data,chart.layout,{displayModeBar: false});
+                Plotly.react(id,chart.data,chart.layout,{displayModeBar: false}).then(chart.createImage());
             };
 
             if (info.TargetProperty === "SeriesLabel" + i) {
                 let update = new Object();
                 update.name = info.SinglePropertyValue;
-                Plotly.restyle(id, update, chart.seriesMap[i].index);
+                Plotly.restyle(id, update, chart.seriesMap[i].index).then(chart.createImage());
             };
         };
 
@@ -132,7 +149,7 @@ function TWRuntimeChart(widget) {
                 } else {
                     update['xaxis' + i] = { title: info.SinglePropertyValue };
                 }
-                Plotly.relayout(id, update);
+                Plotly.relayout(id, update).then(chart.createImage());
             };
         };
 
@@ -141,7 +158,7 @@ function TWRuntimeChart(widget) {
                 let update = new Object();
                 if (i===1) {  update['yaxis'] = { title: info.SinglePropertyValue } }
                 else { update['yaxis' + i] = { title: info.SinglePropertyValue } };
-                Plotly.relayout(id, update);
+                Plotly.relayout(id, update).then(chart.createImage());
             };
         }
     };
@@ -223,17 +240,26 @@ function TWRuntimeChart(widget) {
                         duration: 500
                     }
                 }
-            );
+            ).then(chart.createImage());
         } else {
-            Plotly.react(id,chart.data,chart.layout,{displayModeBar: false});
+            Plotly.react(id,chart.data,chart.layout,{displayModeBar: false}).then(chart.createImage());
         };
     };
 
+    this.createImage = function() {
+        Plotly.toImage(id,{height:properties['ImageHeight'],width:properties['ImageWidth']}).then(
+            function(image) { 
+                widget.setProperty('ChartImage', image.split(',')[1]);
+            })
+    };
+
+    //this interfere's with plotly's default zoom settings
     this.doubleClick = function(data) {
         widget.jqElement.triggerHandler('DoubleClicked');
     }
 
-    
+    //this doesn't currently work for pie charts, since they do not have markers. Also, selection is implicitly not possible for line charts without markers
+    //need to expose this
     this.handleClick = function(data)
     {   
         for (let i=0;i<data.points.length;i++) {
@@ -246,14 +272,14 @@ function TWRuntimeChart(widget) {
                 let item = chart.data[i];
                 if (point.data.dataSource === item.dataSource && point.data.series !== item.series) {
                     let update = {selectedpoints: [selected]};
-                    Plotly.restyle(id,update,i);
+                    Plotly.restyle(id,update,i).then(chart.createImage());
                 }
             }
             widget.updateSelection(point.data.dataSource,selected);
         } 
     };
 
-
+    //need to expose this
     //This needs to handle the case where some other widget is being selected and we need to select our chart as well.
     widget.handleSelectionUpdate = function (propertyName, selectedRows, selectedRowIndices) {
         if (properties['AllowSelection']) {
@@ -261,7 +287,7 @@ function TWRuntimeChart(widget) {
                 let data = chart.data[i];
                 if (data.dataSource === propertyName) {
                     let update = { selectedpoints: [selectedRowIndices]};
-                    Plotly.restyle(id,update,i);
+                    Plotly.restyle(id,update,i).then(chart.createImage());
                 };
             };
         }
@@ -407,7 +433,7 @@ function TWRuntimeChart(widget) {
             height: height
         }
 
-        Plotly.relayout(id, update);
+        Plotly.relayout(id, update).then(chart.createImage());
     };
 
     widget.runtimeProperties = function () {
