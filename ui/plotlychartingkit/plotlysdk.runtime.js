@@ -108,16 +108,13 @@ function TWRuntimeChart(widget) {
 
         for (let i=1;i<=properties['NumberOfSeries'];i++) {
             if (info.TargetProperty === 'XAxis' + i) {
-                let update = new Object();
-                update.xaxis = info.SinglePropertyValue;
                 chart.data[chart.seriesMap[i].index].xaxis = info.SinglePropertyValue;
                 Plotly.react(id,chart.data,chart.layout,{displayModeBar: false});
             };
 
             if (info.TargetProperty === 'YAxis' + i) {
-                let update = new Object();
-                update.yaxis = info.SinglePropertyValue;
-                Plottly.restyle(id, update, chart.seriesMap[i].index);
+                chart.data[chart.seriesMap[i].index].yaxis = info.SinglePropertyValue;
+                Plotly.react(id,chart.data,chart.layout,{displayModeBar: false});
             };
 
             if (info.TargetProperty === "SeriesLabel" + i) {

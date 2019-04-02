@@ -611,6 +611,7 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
                 'selectOptions': [
                     { value: 'y1', text: 'y1' }
                 ],
+                'isBindingTarget': true,
                 'series': seriesNumber
             };
             
