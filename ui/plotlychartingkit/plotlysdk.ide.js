@@ -302,14 +302,6 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
                         property['isBindingTarget'] = true;
                     }
                 };
-                //special case for charts that have series types
-                /*if (key.includes('SeriesType')) {
-                    let visible = false;
-                    if (property['selectOptions'].length > 0) {
-                        visible = true;
-                    }
-                    property['isVisible'] = visible;
-                }*/
             } else if(property.series) {
                 property['isVisible'] = false;
                 if (property['isBindingTarget'] !== undefined) {
@@ -658,7 +650,7 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
             let axisYProperty = {
                 'description': '',
                 'baseType': 'STRING',
-                'defaultValue': 'x1',
+                'defaultValue': 'y1',
                 'isVisible' : true,
                 'selectOptions': [
                     { value: 'y1', text: 'y1' }
@@ -684,15 +676,6 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
                 'isLocalizable': true,
                 'series': seriesNumber
             };
-
-           /* let seriesType = {
-                'description': '',
-                'baseType': 'STRING',
-                'isVisible' : false,
-                'selectOptions': [
-                ],
-                'series': seriesNumber
-            };*/
 
             let seriesMode = {
                 'description': '',
@@ -764,7 +747,6 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
             properties['XAxis' + seriesNumber] = axisXProperty;
             properties['YDataField' + seriesNumber] = dataYProperty;
             properties['YAxis' + seriesNumber] = axisYProperty;
-            //properties['SeriesType' + seriesNumber] = seriesType;
             properties['SeriesMode' + seriesNumber] = seriesMode;
             properties['SeriesSmoothing' + seriesNumber] = seriesSmoothing;
             properties['SeriesLabel' + seriesNumber] = dataLabelProperty;
