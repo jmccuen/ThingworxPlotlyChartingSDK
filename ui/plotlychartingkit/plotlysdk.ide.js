@@ -302,6 +302,14 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
                         property['isBindingTarget'] = true;
                     }
                 };
+                //special case for charts that have series types
+                /*if (key.includes('SeriesType')) {
+                    let visible = false;
+                    if (property['selectOptions'].length > 0) {
+                        visible = true;
+                    }
+                    property['isVisible'] = visible;
+                }*/
             } else if(property.series) {
                 property['isVisible'] = false;
                 if (property['isBindingTarget'] !== undefined) {
@@ -677,14 +685,14 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
                 'series': seriesNumber
             };
 
-            let seriesType = {
+           /* let seriesType = {
                 'description': '',
                 'baseType': 'STRING',
                 'isVisible' : false,
                 'selectOptions': [
                 ],
                 'series': seriesNumber
-            };
+            };*/
 
             let seriesMode = {
                 'description': '',
@@ -756,7 +764,7 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
             properties['XAxis' + seriesNumber] = axisXProperty;
             properties['YDataField' + seriesNumber] = dataYProperty;
             properties['YAxis' + seriesNumber] = axisYProperty;
-            properties['SeriesType' + seriesNumber] = seriesType;
+            //properties['SeriesType' + seriesNumber] = seriesType;
             properties['SeriesMode' + seriesNumber] = seriesMode;
             properties['SeriesSmoothing' + seriesNumber] = seriesSmoothing;
             properties['SeriesLabel' + seriesNumber] = dataLabelProperty;
