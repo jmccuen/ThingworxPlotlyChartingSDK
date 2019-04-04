@@ -71,8 +71,7 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
             'description': 'Top, Right, Bottom, Left',
             'baseType': 'STRING',
             'isVisible': true,
-            'defaultValue': '100, 80, 80, 80',
-            'isBindingTarget': false
+            'defaultValue': '100, 80, 80, 80'
         };
 
         properties.ShowAnimation =  {
@@ -111,16 +110,14 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
             'description': 'Position from 0-1',
             'baseType': 'NUMBER',
             'isVisible': true,
-            'defaultValue': 0.5,
-            'isBindingTarget': false
+            'defaultValue': 0.5
         };
 
         properties.ChartTitleY = {
             'description': 'Position from 0-1 or auto',
             'baseType': 'STRING',
             'isVisible': true,
-            'defaultValue': 'auto',
-            'isBindingTarget': false
+            'defaultValue': 'auto'
         };
 
         properties.ShowLegend =  {
@@ -155,16 +152,14 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
             'description': 'Total width of the widget',
             'baseType': 'NUMBER',
             'isVisible': true,
-            'defaultValue': 400,
-            'isBindingTarget': false
+            'defaultValue': 400
         };
 
         properties.Height =  {
             'description': 'Total height of the widget',
             'baseType': 'NUMBER',
             'isVisible': true,
-            'defaultValue': 400,
-            'isBindingTarget': false
+            'defaultValue': 400
         };
 
         if (type != 'pie') {
@@ -173,23 +168,20 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
                 'description': 'Number of X Axes',
                 'baseType': 'NUMBER',
                 'isVisible': true,
-                'defaultValue': 1,
-                'isBindingTarget': false
+                'defaultValue': 1
             };
 
             properties.NumberOfYAxes =  {
                 'description': 'Number of Y Axes',
                 'baseType': 'NUMBER',
                 'isVisible': true,
-                'defaultValue': 1,
-                'isBindingTarget': false
+                'defaultValue': 1
             };
 
             properties.XAxisField = {
                 'description': TW.IDE.I18NController.translate('tw.xychart-ide.properties.x-axis-field.description'),
                 'baseType': 'FIELDNAME',
                 'sourcePropertyName': 'Data',
-                'isBindingTarget': false,
                 'isVisible': true
             };
             //Need to get properties for X and Y unless I am a pie chart
@@ -257,9 +249,15 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
             if (property.axis) {
                 let visible = widget.getProperty(property.axis + 'AxesVisible');
                 property['isVisible'] = visible;
+                if (property['isBindingTarget'] !== undefined) {
+                    property['isBindingTarget'] = visible;
+                }
                 let numberOfAxes = widget.getProperty('NumberOf' + property.axis + 'Axes');
                 if (property['axisNumber'] && property['axisNumber'] > numberOfAxes) {
                     property['isVisible'] = false;
+                    if (property['isBindingTarget'] !== undefined) {
+                        property['isBindingTarget'] = false;
+                    }
                 };
             };
         };
@@ -292,21 +290,31 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
         for (key in properties) {
             let property = properties[key];
             if (property.series && property.series <= value) {
-                if (properties[key]['isMulti']) {
-                    properties[key]['isVisible'] = !singleSource;
+                if (property['isMulti']) {
+                    property['isVisible'] = !singleSource;
+                    if (property['isBindingTarget'] !== undefined) {
+                        property['isBindingTarget'] = !singleSource;
+                    }
+                    properties['Data']['isBindingTarget'] = singleSource;
                 } else {
-                    properties[key]['isVisible'] = true;
+                    property['isVisible'] = true;
+                    if (property['isBindingTarget'] !== undefined) {
+                        property['isBindingTarget'] = true;
+                    }
                 };
             } else if(property.series) {
-                properties[key]['isVisible'] = false;
+                property['isVisible'] = false;
+                if (property['isBindingTarget'] !== undefined) {
+                    property['isBindingTarget'] = false;
+                }
             }
-            let source = properties[key]['source'];
+            let source = property['source'];
             if (source) {
                 let dataSource = 'Data';
                 if (!singleSource) {
                     dataSource = 'DataSource' + key.slice(-1);
                 }
-                properties[key][source] = dataSource; 
+                property[source] = dataSource; 
             };
         };
         if (singleSource) {
@@ -428,7 +436,6 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
             'baseType': 'NUMBER',
             'isVisible': true,
             'defaultValue': 0,
-            'isBindingTarget': false,
             'axis': axis
         };
 
@@ -437,7 +444,6 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
             'baseType': 'NUMBER',
             'isVisible': true,
             'defaultValue': 0,
-            'isBindingTarget': false,
             'axis': axis
         };
         
@@ -454,7 +460,6 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
             'baseType': 'STRING',
             'isVisible': true,
             'defaultValue': 'auto',
-            'isBindingTarget': false,
             'axis': axis
         };
        
@@ -532,7 +537,6 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
                 'description': '',
                 'baseType': 'STRING',
                 'isVisible': true,
-                'isBindingTarget': false,
                 'axis': axis,
                 'axisNumber': i
             };
@@ -583,7 +587,6 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
                 'baseType': 'NUMBER',
                 'isVisible': true,
                 'defaultValue': 0,
-                'isBindingTarget': false,
                 'axis': axis,
                 'axisNumber': i
             };
@@ -618,7 +621,6 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
                 'description': 'X Axis Field ' + seriesNumber,
                 'baseType': 'FIELDNAME',
                 'sourcePropertyName': 'Data',
-                'isBindingTarget': false,
                 'isVisible': true,
                 'series': seriesNumber,
                 'isMulti': true,
@@ -641,7 +643,6 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
                 'description': TW.IDE.I18NController.translate('tw.labelchart-ide.data-field-property.description') + seriesNumber,
                 'baseType': 'FIELDNAME',
                 'sourcePropertyName': 'Data',
-                'isBindingTarget': false,
                 'isVisible': true,
                 'series': seriesNumber,
                 'source': 'sourcePropertyName'
@@ -662,7 +663,6 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
                 'description': 'Z Axis ' + seriesNumber,
                 'baseType': 'FIELDNAME',
                 'sourcePropertyName': 'Data',
-                'isBindingTarget': false,
                 'isVisible': true,
                 'series': seriesNumber,
                 'source': 'sourcePropertyName'
@@ -745,7 +745,6 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
                 'description': '',
                 'baseType': 'FIELDNAME',
                 'sourcePropertyName': 'Data',
-                'isBindingTarget': false,
                 'isVisible': true,
                 'series': seriesNumber,
                 'source': 'sourcePropertyName'

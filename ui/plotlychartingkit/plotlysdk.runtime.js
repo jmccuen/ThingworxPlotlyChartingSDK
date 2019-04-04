@@ -228,8 +228,8 @@ function TWRuntimeChart(widget) {
         if (properties['ShowAnimation'] && chart.plotted) {
             Plotly.animate(id,
                 {
-                    'data': chart.data, 
-                    'layout': chart.layout
+                    data: chart.data, 
+                    layout: chart.layout
                 },
                 {
                     transition: {
@@ -247,7 +247,7 @@ function TWRuntimeChart(widget) {
     };
 
     this.createImage = function() {
-        Plotly.toImage(id,{height:properties['ImageHeight'],width:properties['ImageWidth']}).then(
+        Plotly.toImage(id,{format: 'png', height:properties['ImageHeight'],width:properties['ImageWidth']}).then(
             function(image) { 
                 widget.setProperty('ChartImage', image.split(',')[1]);
             })
