@@ -379,7 +379,7 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
     };
 
     //validate property values before setting them. Still need to add a bunch of these for the number properties that go from 0-1;
-    this.beforeSetProperty = function (name, value) {
+    widget.beforeSetProperty = function (name, value) {
         if (name === 'NumberOfSeries') {
             value = parseInt(value, 10);
             if (value < 0 || value > chart.MAX_SERIES)
@@ -392,11 +392,6 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
         }
     };
 
-    this.widgetServices = function () {
-        /*return {
-            'ToImage': { 'warnIfNotBound': false }
-        };*/
-    };
 
     //Gets the X and Y properties. The axis settings can all be per axis, but some other them I decided to be shared across all axes
     //This is just so the widget doesnt get too bloated and config heavy
