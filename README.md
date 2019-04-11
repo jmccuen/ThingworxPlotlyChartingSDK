@@ -7,7 +7,7 @@ This SDK is offered 'as-is' and is not a supported product.
 ## Examples
 You can find example implementations of this SDK here: https://github.com/jmccuen/ThingworxPlotlyExamplePlots
 
-##Plotly
+## Plotly
 These charts are built on top of the Plotly Javascript Library, detailed documentation for which can be found here: https://plot.ly/javascript/
 
 
