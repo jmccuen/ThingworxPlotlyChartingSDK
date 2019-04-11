@@ -10,6 +10,11 @@ You can find example implementations of this SDK here: https://github.com/jmccue
 ## Plotly
 These charts are built on top of the Plotly Javascript Library, detailed documentation for which can be found here: https://plot.ly/javascript/
 
+## Install instructions
+* Download the SDK zip and install normally, as a Thingworx Extension: https://github.com/jmccuen/ThingworxPlotlyChartingSDK/blob/master/zip/PlotlyChartLibrary-dev-1.0.192.zip 
+* Install any extension charts which utilize this SDK, such as the example chart's extension zip: https://github.com/jmccuen/ThingworxPlotlyExamplePlots/blob/master/build/distributions/PlotlyPlots.zip
+* Clear cache and refresh Composer
+* Example Charts should appear as Timeseries Plot, Label Plot, Pie Plot, and Surface Plot in the Mashup builder as normal
 
 ## Purpose
 The purpose of this SDK is to ease the process of building charting widgets in PTC's Thingworx platform. It is built off of the standard Thingworx Widget API. For more details on developing Thingworx Widgets, please see the documentation here: https://www.ptc.com/support/-/media/FFF75A096E3245C8BA1E42E1C47C04CD.pdf?sc_lang=en
