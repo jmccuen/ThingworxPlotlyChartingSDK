@@ -359,7 +359,7 @@ function TWIDEChart(widget, name, cssClass, maxSeries, type, maxAxes, multipleDa
     };
 
     //validate property values before setting them. Still need to add a bunch of these for the number properties that go from 0-1;
-    widget.beforeSetProperty = function (name, value) {
+    this.beforeSetProperty = function (name, value) {
         if (name === 'NumberOfSeries') {
             value = parseInt(value, 10);
             if (value < 0 || value > chart.MAX_SERIES)
