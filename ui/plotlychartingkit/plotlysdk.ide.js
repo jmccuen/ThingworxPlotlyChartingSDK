@@ -6,7 +6,7 @@
 
     All chart settings can be found in the Plotly reference documentation: https://plot.ly/javascript/reference
 */ 
-function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
+function TWIDEChart(widget, name, cssClass, maxSeries, type, maxAxes, multipleData) {
 
     this.MAX_SERIES = maxSeries;
     this.MAX_AXES = maxAxes;
@@ -17,7 +17,7 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
     //Get all the standard properties for charts. These properties are shared across all charts by types
     //Sometimes I will not group together things in if statements, such as if !== pie. This is because
     //the order the properties are added is the order they appear in the composer
-    this.getProperties = function() {
+    this.widgetProperties = function() {
         let properties = new Object();
 
         if (type !== 'pie') {
@@ -193,6 +193,7 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
         }
 
         let result = {
+            'name': name,
             'category': ['Data', 'Charts'],
             'supportsLabel': false,
             'supportsAutoResize': true,
@@ -208,11 +209,11 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
     this.widgetIconUrl = function() {
         return "'../Common/extensions/PlotlyChartingKit/ui/plotlychartingkit/plotlyicon.png'";
     }
-    
-    this.renderHtml = function(cssClass, plotName) {
+
+    this.renderHtml = function() {
         var html = '';
         html += '<div class="widget-content widget-plotly ' + cssClass + '"><table height="100%" width="100%"><tr><td valign="middle" align="center"><span>' + 
-        plotName + '</span></td></tr></table></div>';
+        name + '</span></td></tr></table></div>';
         return html;
     }
 

@@ -6,7 +6,7 @@
 
     All chart settings can be found in the Plotly reference documentation: https://plot.ly/javascript/reference
 */ 
-function TWRuntimeChart(widget) {
+function TWRuntimeChart(widget, cssClass) {
     let properties = widget.properties;
     let id;
     let chart = this;
@@ -23,8 +23,13 @@ function TWRuntimeChart(widget) {
     //this is useful for streaming charts that might want to draw once and then extend after the first draw
     this.plotted = false;
 
+	this.renderHtml = function () {
+		return 	'<div class="widget-content ' + cssClass + '">' +
+				'</div>';
+	};
+
     //This should be called in afterRender and it renders the chart onto the div with the appropriate layout settings
-    this.render = function() {
+    this.afterRender = function() {
         id = widget.jqElementId;
 
         chart.data = [];
@@ -121,7 +126,7 @@ function TWRuntimeChart(widget) {
 
     }
 
-    this.update = function(info) {
+    this.updateProperty = function(info) {
         if (info.TargetProperty === "ChartTitle") {
             let update = {
                 title: info.SinglePropertyValue
@@ -198,7 +203,7 @@ function TWRuntimeChart(widget) {
                 trace.marker.gradient.type = 'horizontal';
                 trace.marker.gradient.color = style.secondaryBackgroundColor;
             }*/
-            
+
             switch(style.lineStyle) {
                 case 'dotted':
                     trace.line.dash = 'dot';

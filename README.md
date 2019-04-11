@@ -1,10 +1,12 @@
 # Plotly Charting SDK
 
 ## Disclaimer
-This SDK is a work in process. Please open an issue as you encounter them and let me know if you have any feedback. Not all features are implemented at this time and bugs may be common for the time being.
+This SDK is a work in process. Please open an issue as you encounter them. Not all features are implemented at this time and bugs may be common for the time being.
+This SDK is offered 'as-is' and is not a supported product.
 
 ## Purpose
-The purpose of this SDK is to ease the process of building charting widgets. 
+The purpose of this SDK is to ease the process of building charting widgets in PTC's Thingworx platform. It is built off of the standard Thingworx Widget API. For more details on developing Thingworx Widgets, please see the documentation here: https://www.ptc.com/support/-/media/FFF75A096E3245C8BA1E42E1C47C04CD.pdf?sc_lang=en
+
 Charts share many things in common:
 
 * Chart Area Styling
@@ -37,74 +39,91 @@ This SDK simplifies all of these things by putting common functionality in one p
 
 First, install the current build of the extension, kit.zip, on your instance of Thingworx. This will install Plotly and the two Thingworx libraries. 
 
-Begin widget development as normal.
-
-Example implementations are available in the link at the top of this repository: http://roicentersvn.ptcnet.ptc.com/jmccuen/PlotlyPlots
+Begin widget development as normal (see documentation above)
 
 
 ### IDE
-At the beginning of your widget ide.js, add the following:
+At the beginning of your chart's ide.js, add the following:
 
 ```javascript
-let chart = new TWIDEChart(this,MAX_SERIES,TYPE,MAX_AXES,MULTIPLE_DATASOURCES);
+let chart = new TWIDEChart(this,CHART_NAME, CHART_CSS_CLASS, MAX_SERIES,TYPE,MAX_AXES,MULTIPLE_DATASOURCES);
 ```
-Where 'this' is your widget instance and the rest are the parameters as named. Currently supported types are 'pie', '2d', and '3d' -- these may be extended as needs arise. This call will create a new widget for you based on the type of widget you are creating. All you need to do now is implement widgetIconUrl, widgetProperties, renderHtml, and afterRender. Some of these may be moved to the SDK at a later date.
+Where 'this' is your widget instance and the rest are the parameters as named. Currently supported types are 'pie', '2d', and '3d' -- these may be extended as needs arise. This call will create a new widget for you based on the type of widget you are creating. 
 
-#### widgetIconUrl
-Choose the location of your icon url as normal
+The charting SDK works similarly to an abstract class, thus when you implement a widget API callback, you can also choose to implement the chart's function. For example, your widget.afterRender() callback my look like the following:
+
+```javascript
+	this.afterRender = function() {
+		return chart.afterRender();
+	};
+```
+
+If you want to add additional functionality to your chart, you can add it to your callback function either in addition to or in place of the chart function.
+
+```javascript
+	this.updateProperty = function (updatePropertyInfo) {
+		
+		chart.updateProperty(updatePropertyInfo);
+		
+		if (updatePropertyInfo.TargetProperty === 'Data') {
+			 let data = getData(updatePropertyInfo,false);
+			 chart.draw(data);
+	     };
+		 
+		 for (let i=1;i <= Number(properties['NumberOfSeries']);i++) {
+        	if (updatePropertyInfo.TargetProperty === 'DataSource'+i) {
+        		if (updatePropertyInfo.ActualDataRows.length > 0) {
+	        		let data = getData(updatePropertyInfo, true);
+	        		chart.draw(data);
+        		};
+        	};
+		 }; 
+	};
+```
+
 
 #### widgetProperties
-Most of the standard widget properties are already available and can be grabbed using the following:
+Most of the standard widget properties are already available via the implementation described above:
+
 ```javascript
     this.widgetProperties = function () {
 		
-		let properties = chart.getProperties();
-		properties.name = "Timeseries Plot";
+		let properties = chart.widgetProperties();
 		return properties;
 		
 	};
 ```
 
-The chart from above contains the service getProperties() which should return most of the properties that charts have in common. Make sure to set the name of your chart using properties.name. **Additional properties can be added directly to properties.properties**.
+As with other callbacks, you can extend this or replace it with the properties you need. You can also modify any of the properties by modifying the object -- whatever is returned by this function is what will be added into your chart in the IDE.
 
-*Note*: Thingworx orders properties in the mashup builder based on the order in which they are added to the JSON object. This means extended properties will come at the bottom of the properties object. We are currently working on an approach to solve this problem, so that properties can be inserted in logical places.
+**Notes:** 
 
+* Additional properties can be added directly to properties.properties object.
+* Thingworx orders properties in the mashup builder based on the order in which they are added to the JSON object. This means extended properties will come at the bottom of the properties object. We are currently working on an approach to solve this problem, so that properties can be inserted in logical places.
+* Properties must be implemented in this callback, you cannot dynamically add properties to the widget in a later call. You must show/hide those properties.
 
-#### renderHtml
-Render html as normal.
-
-#### afterRender
-At the begining of afterRender, makes sure to render the chart:
-```javascript
-    chart.render();
-```
-Otherwise, process your after render as normal.
-
-#### Other callbacks
-All other callbacks for the IDE are optional and are handled by the SDK. They can be overriden in your widget as you see fit.
 
 ### Runtime
 At the beginning of your widget runtime.js, add the following:
 
 ```javascript	
-    let chart = new TWRuntimeChart(this);
+    let chart = new TWRuntimeChart(this, CHART_CSS_CLASS);
 ```
 This will create an instance of the runtime chart with your widget. 
 
-#### renderHtml
-Render html as normal.
+As with the ide.js, the chart SDK implements most of the standard widget callbacks which can be extended or replace:
 
-#### afterRender
-At the begining of afterRender, makes sure to render the chart:
 ```javascript
-    chart.render();
+	this.renderHtml = function () {
+		return chart.renderHtml();
+	};
 ```
 
 #### updateProperty
 
 First, make sure to tell the chart a property has been updated:
 ```javascript
-    chart.update(updatePropertyInfo);
+    chart.updateProperty(updatePropertyInfo);
 ```
 This ensures that common bindings -- such as Chart Title or Axis Title -- are updated automatically.
 
@@ -138,13 +157,42 @@ var data = [trace1, trace2, trace3];
 chart.draw(data);
 ```
 
-#### Other Callbacks
+You will likely need to transform your InfoTable into a format that is suitable for your chart:
 
-All other callbacks are handled by the SDK, but can be overrriden as you see fit
+```javascript
 
+this.updateProperty = function (updatePropertyInfo) {
+		chart.updateProperty(updatePropertyInfo);
+		if (updatePropertyInfo.TargetProperty === 'Data') {
+			let rows = updatePropertyInfo.ActualDataRows;
+			
+			
+			let z = [];
+			
+			for (let i = 0; i<rows.length;i++) {
+				let row = rows[i];
+				let x = properties['XAxisField'];
+				let value = properties['ZDataField1'];
+				if (!z[row[x]]) {
+					z[row[x]] = [];
+				}
+				z[row[x]].push(row[value]);
+			}
+			
+			let trace = new Object();
+			trace.series = 1;
+			trace.z = z;
+			trace.type = 'surface';
+
+			
+			chart.draw([trace]);
+			
+		}
+
+```
 
 ## Helper functions and properties
-There are many helper functions exposed to make translating your chart into the correct data format easier. 
+There are also helper functions exposed to make translating your chart into the correct data format easier. 
 
 ### Runtime
 
