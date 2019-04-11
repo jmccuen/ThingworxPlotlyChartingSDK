@@ -4,6 +4,9 @@
 This SDK is a work in process. Please open an issue as you encounter them. Not all features are implemented at this time and bugs may be common for the time being.
 This SDK is offered 'as-is' and is not a supported product.
 
+## Examples
+You can find example implementations of this SDK here: https://github.com/jmccuen/ThingworxPlotlyExamplePlots
+
 ## Purpose
 The purpose of this SDK is to ease the process of building charting widgets in PTC's Thingworx platform. It is built off of the standard Thingworx Widget API. For more details on developing Thingworx Widgets, please see the documentation here: https://www.ptc.com/support/-/media/FFF75A096E3245C8BA1E42E1C47C04CD.pdf?sc_lang=en
 
