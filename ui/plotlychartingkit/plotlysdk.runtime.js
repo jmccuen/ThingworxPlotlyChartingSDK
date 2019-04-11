@@ -186,8 +186,19 @@ function TWRuntimeChart(widget) {
             //fill color apparently doesnt do anything..
             trace.fillcolor = style.backgroundColor;
 
-            trace.marker = new Object();
+            if (!trace.marker) {
+                trace.marker = new Object();
+            }
             trace.marker.color = style.backgroundColor;
+
+            //this only works on scatter charts...
+            /*
+            if (style.secondaryBackgroundColor) {
+                trace.marker.gradient = new Object();
+                trace.marker.gradient.type = 'horizontal';
+                trace.marker.gradient.color = style.secondaryBackgroundColor;
+            }*/
+            
             switch(style.lineStyle) {
                 case 'dotted':
                     trace.line.dash = 'dot';
