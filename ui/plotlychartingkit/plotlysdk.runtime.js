@@ -40,6 +40,8 @@ function TWRuntimeChart(widget) {
             plot_bgcolor: '#fff'
         };
 
+        
+        
         //set up the layout
         if (properties['ShowTitle']) {
             let titleStyle = TW.getStyleFromStyleDefinition(properties['ChartTitleStyle'],'DefaultChartTitleStyle');
@@ -99,6 +101,7 @@ function TWRuntimeChart(widget) {
         
         //draw the chart
         Plotly.newPlot(id, chart.data, chart.layout, {displayModeBar: false}).then(chart.createImage());
+        widget.resize(properties['Width'],properties['Height']);
 
         //Add our click event
         if (properties['AllowSelection']) {
@@ -177,7 +180,11 @@ function TWRuntimeChart(widget) {
                 trace.line = new Object();
             }
             trace.line.color = style.lineColor;
+            //fill color apparently doesnt do anything..
             trace.fillcolor = style.backgroundColor;
+
+            trace.marker = new Object();
+            trace.marker.color = style.backgroundColor;
             switch(style.lineStyle) {
                 case 'dotted':
                     trace.line.dash = 'dot';

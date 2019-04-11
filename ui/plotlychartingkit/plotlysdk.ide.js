@@ -223,7 +223,7 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
         };
         
         Plotly.newPlot(chartId, chartData, layout, {displayModeBar: false});
-
+        widget.resize(widget.getProperty('Width'),widget.getProperty('Height'));
         //for some reason, afterLoad doesn't get called when the chart first initialized. This makes sure my axis and series properties
         //are set correctly on the initial render
         if (type !== 'pie') {
@@ -375,7 +375,16 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
                 properties['SeriesSmoothing' + series]['isVisible'] = false;
             }
             widget.updatedProperties();
+            return true;
         };
+
+        if (name === 'Width' || name === 'Height') {
+            let width = widget.getProperty('Width');
+            let height = widget.getProperty('Height');
+            widget.resize(width,height);
+            return true;
+        }
+        return true;
     };
 
     //validate property values before setting them. Still need to add a bunch of these for the number properties that go from 0-1;
