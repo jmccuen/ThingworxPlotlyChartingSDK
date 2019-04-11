@@ -231,7 +231,7 @@ function TWIDEChart(widget, name, cssClass, maxSeries, type, maxAxes, multipleDa
     this.setAxesProperties = function (name,value) {
         let properties = widget.allWidgetProperties().properties;
         
-        for (key in properties) {
+        for (let key in properties) {
             let property = properties[key];
             if (property.axis) {
                 let visible = widget.getProperty(property.axis + 'AxesVisible');
@@ -274,7 +274,7 @@ function TWIDEChart(widget, name, cssClass, maxSeries, type, maxAxes, multipleDa
         let singleSource = true; 
         if (multipleData) { singleSource = widget.getProperty('SingleDataSource') };
 
-        for (key in properties) {
+        for (let key in properties) {
             let property = properties[key];
             if (property.series && property.series <= value) {
                 if (property['isMulti']) {

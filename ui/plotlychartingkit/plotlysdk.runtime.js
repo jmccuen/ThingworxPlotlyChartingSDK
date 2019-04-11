@@ -179,7 +179,7 @@ function TWRuntimeChart(widget, cssClass) {
     this.draw = function(data) {
         chart.plotted = true;
         for (let i=1;i<=data.length;i++) {
-            trace = data[i-1];
+            let trace = data[i-1];
             let series = trace.series;
 
             let style = TW.getStyleFromStyleDefinition(properties['SeriesStyle' + series],'DefaultChartStyle' + series);
@@ -369,7 +369,7 @@ function TWRuntimeChart(widget, cssClass) {
             };
         };
         
-        for (key in y) {
+        for (let key in y) {
             let hasValues = y[key].values.every(function(value) { return value });
             if (!hasValues) { delete y[key] };
         }
