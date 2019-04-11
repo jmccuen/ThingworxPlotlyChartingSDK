@@ -204,26 +204,20 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
         return result;
 
     }
-    //This renders an example chart, so you can see it in the mashup builder. May replace with a static image later
-    //it would be cool if the styles and everything updated, here, too, but I would need to build a helper class that handled
-    //that for the ide and runtime.
-    this.render = function() {
+
+    this.widgetIconUrl = function() {
+        return "'../Common/extensions/PlotlyChartingKit/ui/plotlychartingkit/plotlyicon.png'";
+    }
+    
+    this.renderHtml = function(cssClass, plotName) {
+        var html = '';
+        html += '<div class="widget-content widget-plotly ' + cssClass + '"><table height="100%" width="100%"><tr><td valign="middle" align="center"><span>' + 
+        plotName + '</span></td></tr></table></div>';
+        return html;
+    }
+
+    this.afterRender = function() {
         chartId = widget.jqElementId;
-
-        let chartData = [];
-
-        layout = {
-			showlegend: true,
-			legend: {'orientation': 'h'},
-			font: {
-				color: 'black',
-				size: 11
-			},
-			plot_bgcolor: '#fff'
-        };
-        
-        Plotly.newPlot(chartId, chartData, layout, {displayModeBar: false});
-        widget.resize(widget.getProperty('Width'),widget.getProperty('Height'));
         //for some reason, afterLoad doesn't get called when the chart first initialized. This makes sure my axis and series properties
         //are set correctly on the initial render
         if (type !== 'pie') {
@@ -231,15 +225,7 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
             chart.setAxesProperties('NumberOfXAxes', widget.getProperty('NumberOfXAxes'));
             chart.setAxesProperties('NumberOfYAxes', widget.getProperty('NumberOfYAxes'));
         }
-
     }
-
-    //this function is somewhat duplicated in the runtime, which isn't great
-    //this just draws the data onto the chart div
-    this.draw = function(data) {
-        Plotly.react(chartId,data,layout,{displayModeBar: false});
-    }
-
     //show or hide axis properties based on other settings
     this.setAxesProperties = function (name,value) {
         let properties = widget.allWidgetProperties().properties;
@@ -326,16 +312,6 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
         };
     }
 
-    //I dont think this actually works in the IDE. Need to test.
-    widget.resize = function(width,height) {
-        let update = {
-            width: width,
-            height: height
-        }
-
-        Plotly.relayout(widget.jqElementId, update);
-    };
-
     widget.widgetEvents = function () {
         return {
         	'DoubleClicked': {}
@@ -378,12 +354,6 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
             return true;
         };
 
-        if (name === 'Width' || name === 'Height') {
-            let width = widget.getProperty('Width');
-            let height = widget.getProperty('Height');
-            widget.resize(width,height);
-            return true;
-        }
         return true;
     };
 
@@ -755,11 +725,12 @@ function TWIDEChart(widget, maxSeries, type, maxAxes, multipleData) {
             properties['SeriesSmoothing' + seriesNumber] = seriesSmoothing;
             properties['SeriesLabel' + seriesNumber] = dataLabelProperty;
             properties['SeriesStyle' + seriesNumber] = seriesStyleProperty;
-            properties['SeriesStyle' + seriesNumber]['defaultValue'] = 'DefaultChartStyle' + seriesNumber;
+            //this makes sure there is always a default style no matter how many series there are in the chart... kind of a hack
+            properties['SeriesStyle' + seriesNumber]['defaultValue'] = 'DefaultChartStyle' + (((seriesNumber-1) % 23) + 1);
             properties['SeriesDataStyle' + seriesNumber] = seriesDataProperty;
             properties['ShowTooltip' + seriesNumber] = seriesTooltipVisible;
             properties['TooltipStyle' + seriesNumber] = seriesTooltipStyle;
-            properties['TooltipStyle' + seriesNumber]['defaultValue'] = 'DefaultChartStyle' + seriesNumber;
+            properties['TooltipStyle' + seriesNumber]['defaultValue'] = 'DefaultChartStyle' + (((seriesNumber-1) % 23) + 1);
             properties['TooltipFormat' + seriesNumber] = seriesTooltipFormat;
             properties['TooltipText' + seriesNumber] = tooltipText;
                 

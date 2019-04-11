@@ -98,10 +98,13 @@ function TWRuntimeChart(widget) {
         if (properties['AllowSelection']) {
             chart.layout.clickmode = 'event+select';
         };
+
+        chart.layout.width = properties['Width'];
+        chart.layout.height = properties['Height'];
+        chart.layout.autosize = false;
         
         //draw the chart
         Plotly.newPlot(id, chart.data, chart.layout, {displayModeBar: false}).then(chart.createImage());
-        widget.resize(properties['Width'],properties['Height']);
 
         //Add our click event
         if (properties['AllowSelection']) {

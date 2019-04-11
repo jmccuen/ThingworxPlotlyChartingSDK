@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?><Entities>
   <ExtensionPackages>
-    <ExtensionPackage dependsOn="" description="" minimumThingWorxVersion="6.0.0" name="PlotlyChartingKit" packageVersion="1.0.176" vendor="Thingworx Labs"/>
+    <ExtensionPackage dependsOn="" description="" minimumThingWorxVersion="6.0.0" name="PlotlyChartingKit" packageVersion="1.0.184" vendor="Thingworx Labs"/>
   </ExtensionPackages>
   <Widgets>
     <Widget name="plotlychartingkit">
       <UIResources>
         <FileResource description="" file="plotlysdk.ide.js" isDevelopment="true" isRuntime="false" type="JS"/>
+        <FileResource description="" file="plotlysdk.ide.css" isDevelopment="true" isRuntime="false" type="CSS"/>
         <FileResource description="" file="plotlysdk.runtime.js" isDevelopment="false" isRuntime="true" type="JS"/>
         <FileResource description="" url="https://cdn.plot.ly/plotly-latest.min.js" isDevelopment="true" isRuntime="true" type="JS"/>
       </UIResources>
