@@ -9,9 +9,9 @@ You can find example implementations of this SDK here: https://github.com/jmccue
 
 ## Plotly
 These charts are built on top of the Plotly Javascript Library, detailed documentation for which can be found here: https://plot.ly/javascript/
-
+bui
 ## Install instructions
-* Download the SDK zip and install normally, as a Thingworx Extension: https://github.com/jmccuen/ThingworxPlotlyChartingSDK/blob/master/zip/PlotlyChartLibrary-dev-1.0.192.zip 
+* Download the SDK zip and install normally, as a Thingworx Extension: https://github.com/jmccuen/ThingworxPlotlyChartingSDK/blob/master/zip/
 * Install any extension charts which utilize this SDK, such as the example chart's extension zip: https://github.com/jmccuen/ThingworxPlotlyExamplePlots/blob/master/build/distributions/PlotlyPlots.zip
 * Clear cache and refresh Composer
 * Example Charts should appear as Timeseries Plot, Label Plot, Pie Plot, and Surface Plot in the Mashup builder as normal
