@@ -402,9 +402,7 @@ function TWRuntimeChart(widget, cssClass) {
         };
 
         for (let key in y) {
-            let hasValues = y[key].values.every(function (value) {
-                return value >= 0
-            });
+            let hasValues = y[key].values.every(function (value) {return value >= 0});
             if (!hasValues) {
                 delete y[key]
             };
