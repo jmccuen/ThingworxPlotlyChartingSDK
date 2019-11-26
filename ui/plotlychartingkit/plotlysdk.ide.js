@@ -5,7 +5,7 @@
     do not need to be called by the instance of the chart widget for every chart.
 
     All chart settings can be found in the Plotly reference documentation: https://plot.ly/javascript/reference
-*/ 
+*/
 function TWIDEChart(widget, name, cssClass, maxSeries, type, maxAxes, multipleData) {
 
     this.MAX_SERIES = maxSeries;
@@ -17,7 +17,7 @@ function TWIDEChart(widget, name, cssClass, maxSeries, type, maxAxes, multipleDa
     //Get all the standard properties for charts. These properties are shared across all charts by types
     //Sometimes I will not group together things in if statements, such as if !== pie. This is because
     //the order the properties are added is the order they appear in the composer
-    this.widgetProperties = function() {
+    this.widgetProperties = function () {
         let properties = new Object();
 
         if (type !== 'pie') {
@@ -29,7 +29,7 @@ function TWIDEChart(widget, name, cssClass, maxSeries, type, maxAxes, multipleDa
             };
         };
 
-        if (multipleData) { 
+        if (multipleData) {
             properties.SingleDataSource = {
                 'description': TW.IDE.I18NController.translate('tw.labelchart-ide.properties.single-data-source.description'),
                 'defaultValue': true,
@@ -45,7 +45,16 @@ function TWIDEChart(widget, name, cssClass, maxSeries, type, maxAxes, multipleDa
             'baseType': 'INFOTABLE',
             'warnIfNotBoundAsTarget': true
         };
-
+        properties.AutoExpand = {
+            'description': 'Turns on/off margin expansion computations',
+            'baseType': 'BOOLEAN',
+            'defaultValue': true
+        };
+        properties.AutoSize = {
+            'description': 'Determines whether or not a layout width or height that has been left undefined by the user is initialized on each relayout',
+            'baseType': 'BOOLEAN',
+            'defaultValue': false
+        };
         properties.ChartImage = {
             'description': '',
             'baseType': 'IMAGE',
@@ -74,13 +83,13 @@ function TWIDEChart(widget, name, cssClass, maxSeries, type, maxAxes, multipleDa
             'defaultValue': '100, 80, 80, 80'
         };
 
-        properties.ShowAnimation =  {
+        properties.ShowAnimation = {
             'description': 'Show animation',
             'baseType': 'BOOLEAN',
             'defaultValue': false
         };
 
-        properties.ShowTitle =  {
+        properties.ShowTitle = {
             'description': 'Show title',
             'baseType': 'BOOLEAN',
             'defaultValue': true
@@ -120,8 +129,20 @@ function TWIDEChart(widget, name, cssClass, maxSeries, type, maxAxes, multipleDa
             'defaultValue': 'auto'
         };
 
-        properties.ShowLegend =  {
+        properties.ShowLegend = {
             'description': TW.IDE.I18NController.translate('tw.labelchart-ide.properties.show-legend.description'),
+            'baseType': 'BOOLEAN',
+            'defaultValue': true
+        };
+
+        properties.DisplayModeBar = {
+            'description': '',
+            'baseType': 'BOOLEAN',
+            'defaultValue': false
+        };
+
+        properties.Responsive = {
+            'description': '',
             'baseType': 'BOOLEAN',
             'defaultValue': true
         };
@@ -130,9 +151,14 @@ function TWIDEChart(widget, name, cssClass, maxSeries, type, maxAxes, multipleDa
             'description': '',
             'baseType': 'STRING',
             'defaultValue': 'h',
-            'selectOptions': [
-                {'value': 'h', 'text': 'Horizontal'},
-                {'value': 'v', 'text': 'Vertical'}
+            'selectOptions': [{
+                    'value': 'h',
+                    'text': 'Horizontal'
+                },
+                {
+                    'value': 'v',
+                    'text': 'Vertical'
+                }
             ]
         };
 
@@ -142,10 +168,63 @@ function TWIDEChart(widget, name, cssClass, maxSeries, type, maxAxes, multipleDa
             'defaultValue': 'DefaultChartTitleStyle'
         };
 
-        properties.AllowSelection =  {
-            'description': 'Allow Selection',
-            'baseType': 'BOOLEAN',
-            'defaultValue': false
+        properties.LegendYAnchor = {
+            'description': 'Sets the vertical postiion of the legend',
+            'baseType': 'STRING',
+            'defaultValue': "auto",
+            'selectOptions': [{
+                    'value': 'auto',
+                    'text': 'auto'
+                },
+                {
+                    'value': 'top',
+                    'text': 'top'
+                },
+                {
+                    'value': 'middle',
+                    'text': 'middle'
+                },
+                {
+                    'value': 'bottom',
+                    'text': 'bottom'
+                }
+            ]
+        };
+
+        properties.LegendXAnchor = {
+            'description': 'Sets the horizontal postiion of the legend',
+            'baseType': 'STRING',
+            'defaultValue': "auto",
+            'selectOptions': [{
+                    'value': 'auto',
+                    'text': 'auto'
+                },
+                {
+                    'value': 'left',
+                    'text': 'left'
+                },
+                {
+                    'value': 'center',
+                    'text': 'center'
+                },
+                {
+                    'value': 'right',
+                    'text': 'right'
+                }
+            ]
+        };
+
+        properties.LegendXPosition = {
+            'description': '',
+            'baseType': 'STRING',
+            'isVisible': true,
+            'defaultValue': '0'
+        };
+        properties.LegendYPosition = {
+            'description': '',
+            'baseType': 'STRING',
+            'isVisible': true,
+            'defaultValue': '-0.1'
         };
 
         properties.Width = {
@@ -155,7 +234,7 @@ function TWIDEChart(widget, name, cssClass, maxSeries, type, maxAxes, multipleDa
             'defaultValue': 400
         };
 
-        properties.Height =  {
+        properties.Height = {
             'description': 'Total height of the widget',
             'baseType': 'NUMBER',
             'isVisible': true,
@@ -163,15 +242,15 @@ function TWIDEChart(widget, name, cssClass, maxSeries, type, maxAxes, multipleDa
         };
 
         if (type != 'pie') {
-            
-            properties.NumberOfXAxes =  {
+
+            properties.NumberOfXAxes = {
                 'description': 'Number of X Axes',
                 'baseType': 'NUMBER',
                 'isVisible': true,
                 'defaultValue': 1
             };
 
-            properties.NumberOfYAxes =  {
+            properties.NumberOfYAxes = {
                 'description': 'Number of Y Axes',
                 'baseType': 'NUMBER',
                 'isVisible': true,
@@ -186,8 +265,8 @@ function TWIDEChart(widget, name, cssClass, maxSeries, type, maxAxes, multipleDa
             };
             //Need to get properties for X and Y unless I am a pie chart
             //TODO: Add something for Z for 3d charts. It should be similar
-            properties = getAxisProperties(properties,'X');
-            properties = getAxisProperties(properties,'Y');
+            properties = getAxisProperties(properties, 'X');
+            properties = getAxisProperties(properties, 'Y');
             properties = getSeriesProperties(properties);
 
         }
@@ -206,18 +285,18 @@ function TWIDEChart(widget, name, cssClass, maxSeries, type, maxAxes, multipleDa
 
     }
 
-    this.widgetIconUrl = function() {
+    this.widgetIconUrl = function () {
         return "'../Common/extensions/PlotlyChartingKit/ui/plotlychartingkit/plotlyicon.png'";
     }
 
-    this.renderHtml = function() {
+    this.renderHtml = function () {
         var html = '';
-        html += '<div class="widget-content widget-plotly ' + cssClass + '"><table height="100%" width="100%"><tr><td valign="middle" align="center"><span>' + 
-        name + '</span></td></tr></table></div>';
+        html += '<div class="widget-content widget-plotly ' + cssClass + '"><table height="100%" width="100%"><tr><td valign="middle" align="center"><span>' +
+            name + '</span></td></tr></table></div>';
         return html;
     }
 
-    this.afterRender = function() {
+    this.afterRender = function () {
         chartId = widget.jqElementId;
         //for some reason, afterLoad doesn't get called when the chart first initialized. This makes sure my axis and series properties
         //are set correctly on the initial render
@@ -228,9 +307,9 @@ function TWIDEChart(widget, name, cssClass, maxSeries, type, maxAxes, multipleDa
         }
     }
     //show or hide axis properties based on other settings
-    this.setAxesProperties = function (name,value) {
+    this.setAxesProperties = function (name, value) {
         let properties = widget.allWidgetProperties().properties;
-        
+
         for (let key in properties) {
             let property = properties[key];
             if (property.axis) {
@@ -248,31 +327,39 @@ function TWIDEChart(widget, name, cssClass, maxSeries, type, maxAxes, multipleDa
                 };
             };
         };
-        
+
         let xAxes = widget.getProperty('NumberOfXAxes');
         let xValues = [];
-        for (let i = 1; i<= xAxes;i++) {
-            xValues.push({ value: 'x' + i, text: 'x' + i });
+        for (let i = 1; i <= xAxes; i++) {
+            xValues.push({
+                value: 'x' + i,
+                text: 'x' + i
+            });
         }
 
         let yAxes = widget.getProperty('NumberOfYAxes');
         let yValues = [];
-        for (let i = 1; i<= yAxes;i++) {
-            yValues.push({ value: 'y' + i, text: 'y' + i });
+        for (let i = 1; i <= yAxes; i++) {
+            yValues.push({
+                value: 'y' + i,
+                text: 'y' + i
+            });
         }
 
-        for (let i = 1; i<= chart.MAX_SERIES;i++) {
+        for (let i = 1; i <= chart.MAX_SERIES; i++) {
             properties['XAxis' + i]['selectOptions'] = xValues;
             properties['YAxis' + i]['selectOptions'] = yValues;
         }
-        
+
     }
 
     //Same thing as above, but for series instead of axes.
     this.setSeriesProperties = function (value) {
         let properties = widget.allWidgetProperties().properties;
-        let singleSource = true; 
-        if (multipleData) { singleSource = widget.getProperty('SingleDataSource') };
+        let singleSource = true;
+        if (multipleData) {
+            singleSource = widget.getProperty('SingleDataSource')
+        };
 
         for (let key in properties) {
             let property = properties[key];
@@ -289,7 +376,7 @@ function TWIDEChart(widget, name, cssClass, maxSeries, type, maxAxes, multipleDa
                         property['isBindingTarget'] = true;
                     }
                 };
-            } else if(property.series) {
+            } else if (property.series) {
                 property['isVisible'] = false;
                 if (property['isBindingTarget'] !== undefined) {
                     property['isBindingTarget'] = false;
@@ -301,7 +388,7 @@ function TWIDEChart(widget, name, cssClass, maxSeries, type, maxAxes, multipleDa
                 if (!singleSource) {
                     dataSource = 'DataSource' + key.slice(-1);
                 }
-                property[source] = dataSource; 
+                property[source] = dataSource;
             };
         };
         if (singleSource) {
@@ -315,13 +402,13 @@ function TWIDEChart(widget, name, cssClass, maxSeries, type, maxAxes, multipleDa
 
     widget.widgetEvents = function () {
         return {
-        	'DoubleClicked': {}
+            'DoubleClicked': {}
         };
     };
 
     //This gets called when the widget is 'loaded', but apparently not on initial render. It makes sure when you go back into editing the mashup,
     //that all of the properties are visible that need to be for the axis and series.
-    this.afterLoad = function() {
+    this.afterLoad = function () {
         if (type !== 'pie') {
             chart.setSeriesProperties(widget.getProperty('NumberOfSeries'));
             chart.setAxesProperties('NumberOfXAxes', widget.getProperty('NumberOfXAxes'));
@@ -376,7 +463,7 @@ function TWIDEChart(widget, name, cssClass, maxSeries, type, maxAxes, multipleDa
     //Gets the X and Y properties. The axis settings can all be per axis, but some other them I decided to be shared across all axes
     //This is just so the widget doesnt get too bloated and config heavy
     function getAxisProperties(properties, axis) {
-        properties[axis + "AxesVisible"] =  {
+        properties[axis + "AxesVisible"] = {
             'description': '',
             'baseType': 'BOOLEAN',
             'isVisible': true,
@@ -384,7 +471,7 @@ function TWIDEChart(widget, name, cssClass, maxSeries, type, maxAxes, multipleDa
             'axis': axis
         };
 
-        properties[axis + "AxesAuto"] =  {
+        properties[axis + "AxesAuto"] = {
             'description': '',
             'baseType': 'BOOLEAN',
             'isVisible': true,
@@ -392,20 +479,28 @@ function TWIDEChart(widget, name, cssClass, maxSeries, type, maxAxes, multipleDa
             'axis': axis
         };
 
-       
-        properties[axis + "AxesTicks"] =  {
+
+        properties[axis + "AxesTicks"] = {
             'description': '',
             'baseType': 'STRING',
             'defaultValue': 'auto',
-            'isVisible' : true,
-            'selectOptions': [
-                { value: 'auto', text: 'Auto' },
-                { value: 'linear', text: 'Linear' },
-                { value: 'array', text: 'InfoTable' }
+            'isVisible': true,
+            'selectOptions': [{
+                    value: 'auto',
+                    text: 'Auto'
+                },
+                {
+                    value: 'linear',
+                    text: 'Linear'
+                },
+                {
+                    value: 'array',
+                    text: 'InfoTable'
+                }
             ],
             'axis': axis
         };
-       
+
         properties[axis + "AxesTickMax"] = {
             'description': 'Max number of X Axis Ticks, if tick mode is auto',
             'baseType': 'NUMBER',
@@ -421,7 +516,7 @@ function TWIDEChart(widget, name, cssClass, maxSeries, type, maxAxes, multipleDa
             'defaultValue': 0,
             'axis': axis
         };
-        
+
         properties[axis + "AxesTickStyle"] = {
             'description': '',
             'baseType': 'STYLEDEFINITION',
@@ -429,7 +524,7 @@ function TWIDEChart(widget, name, cssClass, maxSeries, type, maxAxes, multipleDa
             'defaultValue': 'DefaultChartTitleStyle',
             'axis': axis
         };
-       
+
         properties[axis + "AxesTickAngle"] = {
             'description': '',
             'baseType': 'STRING',
@@ -437,15 +532,15 @@ function TWIDEChart(widget, name, cssClass, maxSeries, type, maxAxes, multipleDa
             'defaultValue': 'auto',
             'axis': axis
         };
-       
-        properties[axis + "AxesShowGrid"] =  {
+
+        properties[axis + "AxesShowGrid"] = {
             'description': '',
             'baseType': 'BOOLEAN',
             'isVisible': true,
             'defaultValue': true,
             'axis': axis
         };
-       
+
         properties[axis + "AxesGridStyle"] = {
             'description': '',
             'baseType': 'STYLEDEFINITION',
@@ -454,8 +549,8 @@ function TWIDEChart(widget, name, cssClass, maxSeries, type, maxAxes, multipleDa
             'axis': axis
         };
 
-        
-        properties[axis + "AxesShowLine"] =  {
+
+        properties[axis + "AxesShowLine"] = {
             'description': '',
             'baseType': 'BOOLEAN',
             'isVisible': true,
@@ -473,7 +568,7 @@ function TWIDEChart(widget, name, cssClass, maxSeries, type, maxAxes, multipleDa
 
         for (let i = 1; i <= chart.MAX_AXES; i++) {
 
-            let axisStyle =  {
+            let axisStyle = {
                 'description': '',
                 'baseType': 'STYLEDEFINITION',
                 'isVisible': true,
@@ -496,13 +591,30 @@ function TWIDEChart(widget, name, cssClass, maxSeries, type, maxAxes, multipleDa
                 'baseType': 'STRING',
                 'isVisible': true,
                 'defaultValue': '-',
-                'selectOptions': [
-                    { value: '-', text: 'Auto' },
-                    { value: 'linear', text: 'Linear' },
-                    { value: 'log', text: 'Logarithmic' },
-                    { value: 'date', text: 'Date' },
-                    { value: 'category', text: 'Category' },
-                    { value: 'multicategory', text: 'Multicategory' },
+                'selectOptions': [{
+                        value: '-',
+                        text: 'Auto'
+                    },
+                    {
+                        value: 'linear',
+                        text: 'Linear'
+                    },
+                    {
+                        value: 'log',
+                        text: 'Logarithmic'
+                    },
+                    {
+                        value: 'date',
+                        text: 'Date'
+                    },
+                    {
+                        value: 'category',
+                        text: 'Category'
+                    },
+                    {
+                        value: 'multicategory',
+                        text: 'Multicategory'
+                    },
                 ],
                 'axis': axis,
                 'axisNumber': i
@@ -517,15 +629,20 @@ function TWIDEChart(widget, name, cssClass, maxSeries, type, maxAxes, multipleDa
             };
 
             let axisSide;
-            if (axis === 'X') { 
+            if (axis === 'X') {
                 axisSide = {
                     'description': '',
                     'baseType': 'STRING',
                     'isVisible': true,
                     'defaultValue': 'top',
-                    'selectOptions': [
-                        { value: 'top', text: 'Top' },
-                        { value: 'bottom', text: 'Bottom' }
+                    'selectOptions': [{
+                            value: 'top',
+                            text: 'Top'
+                        },
+                        {
+                            value: 'bottom',
+                            text: 'Bottom'
+                        }
                     ],
                     'axis': axis,
                     'axisNumber': i
@@ -536,9 +653,14 @@ function TWIDEChart(widget, name, cssClass, maxSeries, type, maxAxes, multipleDa
                     'baseType': 'STRING',
                     'isVisible': true,
                     'defaultValue': 'right',
-                    'selectOptions': [
-                        { value: 'right', text: 'Right' },
-                        { value: 'left', text: 'Left' }
+                    'selectOptions': [{
+                            value: 'right',
+                            text: 'Right'
+                        },
+                        {
+                            value: 'left',
+                            text: 'Left'
+                        }
                     ],
                     'axis': axis,
                     'axisNumber': i
@@ -550,9 +672,10 @@ function TWIDEChart(widget, name, cssClass, maxSeries, type, maxAxes, multipleDa
                 'baseType': 'STRING',
                 'isVisible': true,
                 'defaultValue': 'free',
-                'selectOptions': [
-                    { value: 'free', text: 'Free' }
-                ],
+                'selectOptions': [{
+                    value: 'free',
+                    text: 'Free'
+                }],
                 'axis': axis,
                 'axisNumber': i
             };
@@ -565,13 +688,13 @@ function TWIDEChart(widget, name, cssClass, maxSeries, type, maxAxes, multipleDa
                 'axis': axis,
                 'axisNumber': i
             };
-            
+
             //        anchor='free', overlaying='y',side='left',position=0.15
             properties[axis + 'AxisStyle' + i] = axisStyle;
             properties[axis + 'AxisTitle' + i] = axisTitle;
             properties[axis + 'AxisType' + i] = axisType;
             properties[axis + 'AxisTickFormat' + i] = axisTickFormat;
-            if (i>1) {
+            if (i > 1) {
                 properties[axis + 'AxisPosition' + i] = axisPosition;
             }
 
@@ -606,10 +729,11 @@ function TWIDEChart(widget, name, cssClass, maxSeries, type, maxAxes, multipleDa
                 'description': '',
                 'baseType': 'STRING',
                 'defaultValue': 'x1',
-                'isVisible' : true,
-                'selectOptions': [
-                    { value: 'x1', text: 'x1' }
-                ],
+                'isVisible': true,
+                'selectOptions': [{
+                    value: 'x1',
+                    text: 'x1'
+                }],
                 'isBindingTarget': true,
                 'series': seriesNumber,
             };
@@ -621,19 +745,20 @@ function TWIDEChart(widget, name, cssClass, maxSeries, type, maxAxes, multipleDa
                 'isVisible': true,
                 'series': seriesNumber,
                 'source': 'sourcePropertyName'
-            };  
+            };
             let axisYProperty = {
                 'description': '',
                 'baseType': 'STRING',
                 'defaultValue': 'y1',
-                'isVisible' : true,
-                'selectOptions': [
-                    { value: 'y1', text: 'y1' }
-                ],
+                'isVisible': true,
+                'selectOptions': [{
+                    value: 'y1',
+                    text: 'y1'
+                }],
                 'isBindingTarget': true,
                 'series': seriesNumber
             };
-            
+
             let dataZProperty = {
                 'description': 'Z Axis ' + seriesNumber,
                 'baseType': 'FIELDNAME',
@@ -641,7 +766,7 @@ function TWIDEChart(widget, name, cssClass, maxSeries, type, maxAxes, multipleDa
                 'isVisible': true,
                 'series': seriesNumber,
                 'source': 'sourcePropertyName'
-            };  
+            };
 
             let dataLabelProperty = {
                 'description': TW.IDE.I18NController.translate('tw.labelchart-ide.data-label-property.description') + seriesNumber,
@@ -655,20 +780,19 @@ function TWIDEChart(widget, name, cssClass, maxSeries, type, maxAxes, multipleDa
             let seriesMode = {
                 'description': '',
                 'baseType': 'STRING',
-                'isVisible' : false,
-                'selectOptions': [
-                ],
+                'isVisible': false,
+                'selectOptions': [],
                 'series': seriesNumber
             };
 
             let seriesSmoothing = {
                 'description': '',
                 'baseType': 'NUMBER',
-                'isVisible' : false,
+                'isVisible': false,
                 'defaultValue': 1,
                 'series': seriesNumber
             };
-                
+
             let seriesStyleProperty = {
                 'description': TW.IDE.I18NController.translate('tw.labelchart-ide.series-style-property.description') + seriesNumber,
                 'baseType': 'STYLEDEFINITION',
@@ -716,8 +840,10 @@ function TWIDEChart(widget, name, cssClass, maxSeries, type, maxAxes, multipleDa
                 'source': 'sourcePropertyName'
             };
 
-            
-            if(multipleData) { properties['DataSource' + seriesNumber] = dataSourceProperty; };
+
+            if (multipleData) {
+                properties['DataSource' + seriesNumber] = dataSourceProperty;
+            };
             properties['XDataField' + seriesNumber] = dataXProperty;
             properties['XAxis' + seriesNumber] = axisXProperty;
             properties['YDataField' + seriesNumber] = dataYProperty;
@@ -727,15 +853,17 @@ function TWIDEChart(widget, name, cssClass, maxSeries, type, maxAxes, multipleDa
             properties['SeriesLabel' + seriesNumber] = dataLabelProperty;
             properties['SeriesStyle' + seriesNumber] = seriesStyleProperty;
             //this makes sure there is always a default style no matter how many series there are in the chart... kind of a hack
-            properties['SeriesStyle' + seriesNumber]['defaultValue'] = 'DefaultChartStyle' + (((seriesNumber-1) % 23) + 1);
+            properties['SeriesStyle' + seriesNumber]['defaultValue'] = 'DefaultChartStyle' + (((seriesNumber - 1) % 23) + 1);
             properties['SeriesDataStyle' + seriesNumber] = seriesDataProperty;
             properties['ShowTooltip' + seriesNumber] = seriesTooltipVisible;
             properties['TooltipStyle' + seriesNumber] = seriesTooltipStyle;
-            properties['TooltipStyle' + seriesNumber]['defaultValue'] = 'DefaultChartStyle' + (((seriesNumber-1) % 23) + 1);
+            properties['TooltipStyle' + seriesNumber]['defaultValue'] = 'DefaultChartStyle' + (((seriesNumber - 1) % 23) + 1);
             properties['TooltipFormat' + seriesNumber] = seriesTooltipFormat;
             properties['TooltipText' + seriesNumber] = tooltipText;
-                
-            if (type === '3d') { properties['ZDataField' + seriesNumber] = dataZProperty };
+
+            if (type === '3d') {
+                properties['ZDataField' + seriesNumber] = dataZProperty
+            };
         }
         return properties;
     }
