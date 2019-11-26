@@ -5,12 +5,12 @@
     the chart widget and thus repeated for every chart.
 
     All chart settings can be found in the Plotly reference documentation: https://plot.ly/javascript/reference
-*/ 
+*/
 function TWRuntimeChart(widget, cssClass) {
     let properties = widget.properties;
     let id;
     let chart = this;
-    
+
     //expose the layout and chart data so you can access them from within the source widget
     //This gives the user more control over the chart and allows overriding the sdk
     this.layout = new Object;
@@ -23,13 +23,13 @@ function TWRuntimeChart(widget, cssClass) {
     //this is useful for streaming charts that might want to draw once and then extend after the first draw
     this.plotted = false;
 
-	this.renderHtml = function () {
-		return 	'<div class="widget-content ' + cssClass + '">' +
-				'</div>';
-	};
+    this.renderHtml = function () {
+        return '<div class="widget-content ' + cssClass + '">' +
+            '</div>';
+    };
 
     //This should be called in afterRender and it renders the chart onto the div with the appropriate layout settings
-    this.afterRender = function() {
+    this.afterRender = function () {
         id = widget.jqElementId;
 
         chart.data = [];
@@ -37,20 +37,26 @@ function TWRuntimeChart(widget, cssClass) {
         let div = document.getElementById(widget.jqElementId);
 
         chart.layout = {
-			showlegend: properties['ShowLegend'],
-			font: {
-				color: 'black',
-				size: 11
+            showlegend: properties['ShowLegend'],
+            font: {
+                color: 'black',
+                size: 11
             },
             plot_bgcolor: '#fff'
         };
 
-        
-        
+        chart.config = {
+            displayModeBar: properties['DisplayModeBar'],
+            responsive: properties['Responsive']
+        };
+
+
         //set up the layout
         if (properties['ShowTitle']) {
-            let titleStyle = TW.getStyleFromStyleDefinition(properties['ChartTitleStyle'],'DefaultChartTitleStyle');
+            let titleStyle = TW.getStyleFromStyleDefinition(properties['ChartTitleStyle'], 'DefaultChartTitleStyle');
             let title = new Object();
+            title.yref = "paper";
+            title.xref = "paper";
             title.text = properties['ChartTitle'];
             title.font = new Object();
             title.font.size = Number(getFontSize(titleStyle.textSize));
@@ -61,9 +67,13 @@ function TWRuntimeChart(widget, cssClass) {
         }
 
         if (properties['ShowLegend']) {
-            let legendStyle = TW.getStyleFromStyleDefinition(properties['LegendStyle'],'DefaultChartTitleStyle');
+            let legendStyle = TW.getStyleFromStyleDefinition(properties['LegendStyle'], 'DefaultChartTitleStyle');
             let legend = new Object();
             legend.orientation = properties['LegendOrientation'];
+            legend.yanchor = properties['LegendYAnchor'];
+            legend.xanchor = properties['LegendXAnchor'];
+            legend.x = properties['LegendXPosition'];
+            legend.y = properties['LegendYPosition'];
             legend.bgcolor = legendStyle.backgroundColor;
             legend.font = new Object();
             legend.font.size = Number(getFontSize(legendStyle.textSize));
@@ -80,24 +90,26 @@ function TWRuntimeChart(widget, cssClass) {
         margin.r = Number(margins[1].trim());
         margin.b = Number(margins[2].trim());
         margin.l = Number(margins[3].trim());
-       
+        margin.autoexpand = properties['AutoExpand'];
+
 
         chart.layout.margin = margin;
 
         //Set up the axes. Axis 1 is a bit different from the others, because there is no trailing number for them
         if (properties['NumberOfXAxes']) {
-            chart.layout.xaxis = getAxisObject('X',1);
+            chart.layout.xaxis = getAxisObject('X', 1);
         };
 
         if (properties['NumberOfYAxes']) {
-            chart.layout.yaxis = getAxisObject('Y',1);
+            chart.layout.yaxis = getAxisObject('Y', 1);
         };
 
-        for (let i = 2; i <= properties['NumberOfXAxes'];i++) {
-            chart.layout['xaxis' + i] = getAxisObject('X',i);
+        for (let i = 2; i <= properties['NumberOfXAxes']; i++) {
+            chart.layout['xaxis' + i] = getAxisObject('X', i);
         }
-        for (let i = 2; i <= properties['NumberOfYAxes'];i++) {
-            chart.layout['yaxis' + i] = getAxisObject('Y',i);
+        for (let i = 2; i <= properties['NumberOfYAxes']; i++) {
+            chart.layout['yaxis' + i] = getAxisObject('Y', i);
+            chart.layout['yaxis' + i].side = "right";
         }
 
         if (properties['AllowSelection']) {
@@ -106,11 +118,12 @@ function TWRuntimeChart(widget, cssClass) {
 
         chart.layout.width = properties['Width'];
         chart.layout.height = properties['Height'];
-        chart.layout.autosize = false;
-        
-        //draw the chart
-        Plotly.newPlot(id, chart.data, chart.layout, {displayModeBar: false}).then(chart.createImage());
+        chart.layout.autosize = properties['AutoSize'];;
 
+        //draw the chart
+        Plotly.newPlot(id, chart.data, chart.layout, chart.config).then(chart.createImage());
+
+        $('#navigation').insertAfter(".container");
         //Add our click event
         if (properties['AllowSelection']) {
             div.on('plotly_click', chart.handleClick);
@@ -121,12 +134,12 @@ function TWRuntimeChart(widget, cssClass) {
     }
 
     //extend takes in just new data and adds it to the trace. Need to pass in trace number here, right now this only works for index 0.
-    this.extend = function(data) {
-        Plotly.extendTraces(id,data, [0]);
+    this.extend = function (data) {
+        Plotly.extendTraces(id, data, [0]);
 
     }
 
-    this.updateProperty = function(info) {
+    this.updateProperty = function (info) {
         if (info.TargetProperty === "ChartTitle") {
             let update = {
                 title: info.SinglePropertyValue
@@ -134,15 +147,15 @@ function TWRuntimeChart(widget, cssClass) {
             Plotly.relayout(id, update).then(chart.createImage());
         };
 
-        for (let i=1;i<=properties['NumberOfSeries'];i++) {
+        for (let i = 1; i <= properties['NumberOfSeries']; i++) {
             if (info.TargetProperty === 'XAxis' + i) {
                 chart.data[chart.seriesMap[i].index].xaxis = info.SinglePropertyValue;
-                Plotly.react(id,chart.data,chart.layout,{displayModeBar: false}).then(chart.createImage());
+                Plotly.react(id, chart.data, chart.layout, chart.config).then(chart.createImage());
             };
 
             if (info.TargetProperty === 'YAxis' + i) {
                 chart.data[chart.seriesMap[i].index].yaxis = info.SinglePropertyValue;
-                Plotly.react(id,chart.data,chart.layout,{displayModeBar: false}).then(chart.createImage());
+                Plotly.react(id, chart.data, chart.layout, chart.config).then(chart.createImage());
             };
 
             if (info.TargetProperty === "SeriesLabel" + i) {
@@ -152,23 +165,34 @@ function TWRuntimeChart(widget, cssClass) {
             };
         };
 
-        for (let i=1;i<=properties['NumberOfXAxes'];i++) {
+        for (let i = 1; i <= properties['NumberOfXAxes']; i++) {
             if (info.TargetProperty === 'XAxisTitle' + i) {
                 let update = new Object();
-                if (i===1) {
-                    update['xaxis'] = { title: info.SinglePropertyValue };
+                if (i === 1) {
+                    update['xaxis'] = {
+                        title: info.SinglePropertyValue
+                    };
                 } else {
-                    update['xaxis' + i] = { title: info.SinglePropertyValue };
+                    update['xaxis' + i] = {
+                        title: info.SinglePropertyValue
+                    };
                 }
                 Plotly.relayout(id, update).then(chart.createImage());
             };
         };
 
-        for (let i=1;i<=properties['NumberOfYAxes'];i++) {
+        for (let i = 1; i <= properties['NumberOfYAxes']; i++) {
             if (info.TargetProperty === 'YAxisTitle' + i) {
                 let update = new Object();
-                if (i===1) {  update['yaxis'] = { title: info.SinglePropertyValue } }
-                else { update['yaxis' + i] = { title: info.SinglePropertyValue } };
+                if (i === 1) {
+                    update['yaxis'] = {
+                        title: info.SinglePropertyValue
+                    }
+                } else {
+                    update['yaxis' + i] = {
+                        title: info.SinglePropertyValue
+                    }
+                };
                 Plotly.relayout(id, update).then(chart.createImage());
             };
         }
@@ -176,14 +200,14 @@ function TWRuntimeChart(widget, cssClass) {
 
 
     //this is where we actually get in data and draw it onto the chart
-    this.draw = function(data) {
+    this.draw = function (data) {
         chart.plotted = true;
-        for (let i=1;i<=data.length;i++) {
-            let trace = data[i-1];
+        for (let i = 1; i <= data.length; i++) {
+            let trace = data[i - 1];
             let series = trace.series;
 
-            let style = TW.getStyleFromStyleDefinition(properties['SeriesStyle' + series],'DefaultChartStyle' + series);
-            let hoverStyle = TW.getStyleFromStyleDefinition(properties['TooltipStyle' + series],'DefaultChartStyle' + series);
+            let style = TW.getStyleFromStyleDefinition(properties['SeriesStyle' + series], 'DefaultChartStyle' + series);
+            let hoverStyle = TW.getStyleFromStyleDefinition(properties['TooltipStyle' + series], 'DefaultChartStyle' + series);
             if (!trace.line) {
                 trace.line = new Object();
             }
@@ -204,27 +228,28 @@ function TWRuntimeChart(widget, cssClass) {
                 trace.marker.gradient.color = style.secondaryBackgroundColor;
             }*/
 
-            switch(style.lineStyle) {
+            switch (style.lineStyle) {
                 case 'dotted':
                     trace.line.dash = 'dot';
                     break;
-                case 'dashed': 
+                case 'dashed':
                     trace.line.dash = 'dash';
                     break;
-                default:   
+                default:
                     trace.line.dash = 'solid';
             };
             trace.name = properties['SeriesLabel' + series];
             trace.hoverinfo = 'none';
             if (properties['ShowTooltip' + series]) {
                 trace.hoverinfo = properties['TooltipFormat' + series];
-            }
-            trace.hoverlabel = new Object();
-            trace.hoverlabel.bgcolor = hoverStyle.backgroundColor;
-            trace.hoverlabel.bordercolor = hoverStyle.lineColor;
-            trace.hoverlabel.font = {
-                color: hoverStyle.foregroundColor,
-                size: Number(getFontSize(hoverStyle.textSize))
+
+                trace.hoverlabel = new Object();
+                trace.hoverlabel.bgcolor = hoverStyle.backgroundColor;
+                trace.hoverlabel.bordercolor = hoverStyle.lineColor;
+                trace.hoverlabel.font = {
+                    color: hoverStyle.foregroundColor,
+                    size: Number(getFontSize(hoverStyle.textSize))
+                }
             }
             if (properties['XAxis' + series] !== 'x1') {
                 trace.xaxis = properties['XAxis' + series];
@@ -235,7 +260,7 @@ function TWRuntimeChart(widget, cssClass) {
             //}
 
             if (properties['AllowSelection']) {
-                let selectedStyle = TW.getStyleFromStyleDefinition(properties['SelectedItemStyle'],'DefaultChartSelectionStyle');
+                let selectedStyle = TW.getStyleFromStyleDefinition(properties['SelectedItemStyle'], 'DefaultChartSelectionStyle');
                 trace.selected = new Object();
                 trace.selected.marker = new Object();
                 trace.selected.marker.color = selectedStyle.backgroundColor;
@@ -252,68 +277,72 @@ function TWRuntimeChart(widget, cssClass) {
         };
 
         if (properties['ShowAnimation'] && chart.plotted) {
-            Plotly.animate(id,
-                {
-                    data: chart.data, 
-                    layout: chart.layout
+            Plotly.animate(id, {
+                data: chart.data,
+                layout: chart.layout
+            }, {
+                transition: {
+                    duration: 500,
+                    easing: 'cubic-in-out'
                 },
-                {
-                    transition: {
-                        duration: 500,
-                        easing: 'cubic-in-out'
-                    },
-                    frame: {
-                        duration: 500
-                    }
+                frame: {
+                    duration: 500
                 }
-            ).then(chart.createImage());
+            }).then(chart.createImage());
         } else {
-            Plotly.react(id,chart.data,chart.layout,{displayModeBar: false}).then(chart.createImage());
+            Plotly.react(id, chart.data, chart.layout, chart.config).then(chart.createImage());
         };
     };
 
-    this.createImage = function() {
-        Plotly.toImage(id,{format: 'png', height:properties['ImageHeight'],width:properties['ImageWidth']}).then(
-            function(image) { 
+    this.createImage = function () {
+        Plotly.toImage(id, {
+            format: 'png',
+            height: properties['ImageHeight'],
+            width: properties['ImageWidth']
+        }).then(
+            function (image) {
                 widget.setProperty('ChartImage', image.split(',')[1]);
             })
     };
 
     //this interfere's with plotly's default zoom settings
-    this.doubleClick = function(data) {
+    this.doubleClick = function (data) {
         widget.jqElement.triggerHandler('DoubleClicked');
     }
 
     //this doesn't currently work for pie charts, since they do not have markers. Also, selection is implicitly not possible for line charts without markers
     //need to expose this
-    this.handleClick = function(data)
-    {   
-        for (let i=0;i<data.points.length;i++) {
+    this.handleClick = function (data) {
+        for (let i = 0; i < data.points.length; i++) {
             let point = data.points[i];
             let selected = [point.pointIndex];
             if (!point.pointIndex) {
                 selected = [point.i];
             }
-            for (let i=0;i<chart.data.length;i++) {
+            for (let i = 0; i < chart.data.length; i++) {
                 let item = chart.data[i];
                 if (point.data.dataSource === item.dataSource && point.data.series !== item.series) {
-                    let update = {selectedpoints: [selected]};
-                    Plotly.restyle(id,update,i).then(chart.createImage());
+                    let update = {
+                        selectedpoints: [selected]
+                    };
+                    Plotly.restyle(id, update, i).then(chart.createImage());
                 }
             }
-            widget.updateSelection(point.data.dataSource,selected);
-        } 
+            widget.updateSelection(point.data.dataSource, selected);
+        }
     };
 
     //need to expose this
     //This needs to handle the case where some other widget is being selected and we need to select our chart as well.
     widget.handleSelectionUpdate = function (propertyName, selectedRows, selectedRowIndices) {
         if (properties['AllowSelection']) {
-            for (let i=0;i<chart.data.length;i++) {
+            for (let i = 0; i < chart.data.length; i++) {
                 let data = chart.data[i];
                 if (data.dataSource === propertyName) {
-                    let update = { selectedpoints: [selectedRowIndices]};
-                    Plotly.restyle(id,update,i).then(chart.createImage());
+                    let update = {
+                        selectedpoints: [selectedRowIndices]
+                    };
+                    Plotly.restyle(id, update, i).then(chart.createImage());
                 };
             };
         }
@@ -321,115 +350,123 @@ function TWRuntimeChart(widget, cssClass) {
 
     //its really dumb that the style definition adds px to the font size...
     function getFontSize(text) {
-    	return TW.getTextSize(text).split(": ")[1].replace("px;","");
+        return TW.getTextSize(text).split(": ")[1].replace("px;", "");
     };
 
     //this is just a helper function that translates an infotable with fields into an x y object for plotly
-    this.getXY = function(it,multi) {
-		const rows = it.ActualDataRows;
-		let values = new Object(),
-        x = [],
-        y = new Object(),
-        xField = 'XAxisField',
-        nSeries = properties['NumberOfSeries']
-               
-        for (let i=0;i<rows.length;i++) {
+    this.getXY = function (it, multi) {
+        const rows = it.ActualDataRows;
+        let values = new Object(),
+            x = [],
+            y = new Object(),
+            xField = 'XAxisField',
+            nSeries = properties['NumberOfSeries']
+
+        for (let i = 0; i < rows.length; i++) {
             let j = 1;
 
             //this is kind of a hack. If we don't do this and the InfoTable coming in has the same YDataField, it will update the chart with the wrong source data
             //this way it wont do that and will only update the series for the multi data coming in
-            if (multi) { 
+            if (multi) {
                 nSeries = Number(it.TargetProperty.slice(-1));
                 j = nSeries;
                 xField = 'XDataField' + nSeries;
             };
-        	x.push(rows[i][properties[xField]]);
-            for (j;j<=nSeries;j++) {
+            x.push(rows[i][properties[xField]]);
+            for (j; j <= nSeries; j++) {
                 if (properties['YDataField' + j]) {
-                        if (!y[j]) {	
-                            y[j] = new Object();
-                            y[j].values = [];
-                            y[j].markerColors = [];
-                            if (properties['ShowTooltip' + j] && properties['TooltipText' + j]) {
-                                y[j].text = [];
-                            };
-                        };
-
-                        let formatter = properties['SeriesDataStyle'+j];
-                        if (formatter) {
-                            formatResult = TW.getStyleFromStateFormatting({ DataRow: rows[i], StateFormatting: formatter });
-                            y[j].markerColors.push(formatResult.backgroundColor);
-                        }
-                        
-                        y[j].values.push(rows[i][properties['YDataField' + j]]);
+                    if (!y[j]) {
+                        y[j] = new Object();
+                        y[j].values = [];
+                        y[j].markerColors = [];
                         if (properties['ShowTooltip' + j] && properties['TooltipText' + j]) {
-                            y[j].text.push(rows[i][properties['TooltipText' + j]]);
+                            y[j].text = [];
                         };
+                    };
+
+                    let formatter = properties['SeriesDataStyle' + j];
+                    if (formatter) {
+                        formatResult = TW.getStyleFromStateFormatting({
+                            DataRow: rows[i],
+                            StateFormatting: formatter
+                        });
+                        y[j].markerColors.push(formatResult.backgroundColor);
+                    }
+
+                    y[j].values.push(rows[i][properties['YDataField' + j]]);
+                    if (properties['ShowTooltip' + j] && properties['TooltipText' + j]) {
+                        y[j].text.push(rows[i][properties['TooltipText' + j]]);
+                    };
                 };
             };
         };
-        
+
         for (let key in y) {
-            let hasValues = y[key].values.every(function(value) { return value });
-            if (!hasValues) { delete y[key] };
+            let hasValues = y[key].values.every(function (value) {
+                return value >= 0
+            });
+            if (!hasValues) {
+                delete y[key]
+            };
         }
 
         values.x = x;
         values.y = y;
-        
+
         return values;
     }
-    
+
     //This is another helper function that translates an infotable with no fields into an x y object for plotly
     //we use this when we want to dynamically generate a chart without setting each series field. In that case we
     //render every field up to our field count, as long as its a number or integer value
-	this.getDynamicXY = function(it) {
-		const rows = it.ActualDataRows;
-		let values = new Object();
+    this.getDynamicXY = function (it) {
+        const rows = it.ActualDataRows;
+        let values = new Object();
         let x = [];
         let y = new Object();
         let shape = it.DataShape;
         let xField = 'XAxisField';
-		
-		for (let i=0;i<rows.length;i++) {
-			let count = 1;
-			x.push(rows[i][properties[xField]]);
-			for (let key in shape) {
-				if (shape[key].baseType === 'NUMBER' || shape[key].baseType === 'INTEGER') {
-					if (!y[count]) {	
-						y[count] = new Object();
+
+        for (let i = 0; i < rows.length; i++) {
+            let count = 1;
+            x.push(rows[i][properties[xField]]);
+            for (let key in shape) {
+                if (shape[key].baseType === 'NUMBER' || shape[key].baseType === 'INTEGER') {
+                    if (!y[count]) {
+                        y[count] = new Object();
                         y[count].values = [];
                         y[count].markerColors = [];
-					};
-					y[count].values.push(rows[i][key]);
-					count++;
-				};
-			};
-		};
-		values.x = x;
-		values.y = y;
-		
+                    };
+                    y[count].values.push(rows[i][key]);
+                    count++;
+                };
+            };
+        };
+        values.x = x;
+        values.y = y;
+
         return values
     };
-    
+
     //This actually builds out axis object for each of our axes. This is called when the chart is rendered.
-    function getAxisObject(xy,i) {
-        
-        let style = TW.getStyleFromStyleDefinition(properties[xy + 'AxisStyle' + i],'DefaultChartStyle' + i);
-        let tickStyle = TW.getStyleFromStyleDefinition(properties[xy + 'AxisTickStyle' + i],'DefaultChartStyle' + i);
-        let lineStyle = TW.getStyleFromStyleDefinition(properties[xy + 'AxesLineStyle'],'DefaultChartStyle');
-        let gridStyle = TW.getStyleFromStyleDefinition(properties[xy + 'AxesGridStyle'],'DefaultChartStyle');
+    function getAxisObject(xy, i) {
+
+        let style = TW.getStyleFromStyleDefinition(properties[xy + 'AxisStyle' + i], 'DefaultChartStyle' + i);
+        let tickStyle = TW.getStyleFromStyleDefinition(properties[xy + 'AxisTickStyle' + i], 'DefaultChartStyle' + i);
+        let lineStyle = TW.getStyleFromStyleDefinition(properties[xy + 'AxesLineStyle'], 'DefaultChartStyle');
+        let gridStyle = TW.getStyleFromStyleDefinition(properties[xy + 'AxesGridStyle'], 'DefaultChartStyle');
 
         let axis = new Object();
+        axis.automargin = true;
         axis.visible = properties[xy + 'AxesVisible'];
         axis.title = {
-            text: properties[xy + 'AxisTitle' + i],
-            font: {
-                color: style.foregroundColor,
-                size: getFontSize(style.textSize)
-            }
-        },
-        axis.type = properties[xy + 'AxisType' + i];
+                text: properties[xy + 'AxisTitle' + i],
+                font: {
+                    color: style.foregroundColor,
+                    size: getFontSize(style.textSize)
+                }
+            },
+            axis.type = properties[xy + 'AxisType' + i];
         axis.autorange = properties[xy + 'AxesAuto'];
         axis.tickmode = properties[xy + 'AxesTicks'];
         axis.nticks = properties[xy + 'AxesTickMax'];
@@ -445,7 +482,7 @@ function TWRuntimeChart(widget, cssClass) {
         axis.linecolor = lineStyle.backgroundColor;
         axis.showgrid = properties[xy + 'AxesShowGrid'];
         axis.gridstyle = gridStyle.backgroundColor;
-        if (i>1) {
+        if (i > 1) {
             axis.overlaying = xy.toLowerCase();
             axis.position = properties[xy + 'AxisPosition' + i];
             axis.anchor = 'free';
@@ -453,7 +490,7 @@ function TWRuntimeChart(widget, cssClass) {
         return axis;
     }
 
-    widget.resize = function(width,height) {
+    widget.resize = function (width, height) {
         let update = {
             width: width,
             height: height
@@ -465,13 +502,13 @@ function TWRuntimeChart(widget, cssClass) {
     widget.runtimeProperties = function () {
         return {
             'needsDataLoadingAndError': true,
-	        'supportsAutoResize': true
+            'supportsAutoResize': true
         };
     };
 
     widget.beforeDestroy = function () {
-       Plotly.purge(id);
-       chart= undefined;
+        Plotly.purge(id);
+        chart = undefined;
     };
 
 
