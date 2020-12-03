@@ -238,7 +238,11 @@ function TWRuntimeChart(widget, cssClass) {
                 default:
                     trace.line.dash = 'solid';
             };
-            trace.name = properties['SeriesLabel' + series];
+            
+            if (properties['SeriesLabel' + series] !== undefined) {
+                trace.name = properties['SeriesLabel' + series];
+            }
+            
             trace.hoverinfo = 'none';
             if (properties['ShowTooltip' + series]) {
                 trace.hoverinfo = properties['TooltipFormat' + series];
